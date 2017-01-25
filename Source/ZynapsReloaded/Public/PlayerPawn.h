@@ -8,6 +8,9 @@
 #include "PlayerProjectile.h"
 #include "PlayerPawn.generated.h"
 
+// Log category
+DECLARE_LOG_CATEGORY_EXTERN(LogPlayerPawn, Log, All);
+
 // This constants are applied to calculate collisions with the screen margins
 const float LimitMarginUp = 7.0f;
 const float LimitMarginDown = 3.0f;
@@ -124,6 +127,18 @@ protected:
 	FTransform GetSocketTransform(FName SocketName) const;
 
 private: 
+
+	// Creates the capsule component used for collision detection
+	UCapsuleComponent* CreateCapsuleComponent(USceneComponent* Parent);
+
+	// Creates the mesh component which models the ship
+	UStaticMeshComponent* CreateMeshComponent(USceneComponent* Parent);
+
+	// Creates the particle system for the engine thrust
+	UParticleSystemComponent* CreateEngineThrustParticleSystem(USceneComponent* Parent, FName SocketName);
+
+	// Creates the Projector 2D component
+	UProjector2DComponent* CreateProjector2DComponent();
 
 	// Viewport size update each tick
 	FVector2D ViewportSize;

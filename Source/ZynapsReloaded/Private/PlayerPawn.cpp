@@ -3,6 +3,9 @@
 #include "ZynapsReloaded.h"
 #include "PlayerPawn.h"
 
+// Log category
+DEFINE_LOG_CATEGORY(LogPlayerPawn);
+
 // Sets default values
 APlayerPawn::APlayerPawn() : Super()
 {
@@ -12,70 +15,18 @@ APlayerPawn::APlayerPawn() : Super()
 	// Set up root component
 	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
 
-	// Set up collision capsule as the root component
-	CapsuleComponent = CreateDefaultSubobject<UCapsuleComponent>(TEXT("CapsuleComponent"));
-	CapsuleComponent->InitCapsuleSize(18.0f, 32.0f);
-	CapsuleComponent->SetWorldLocation(FVector(0.0f, 0.0f, 0.0f));
-	CapsuleComponent->SetWorldRotation(FRotator(0.0f, 180.0f, -90.0f));
-	CapsuleComponent->SetWorldScale3D(FVector(12.0f, 10.0f, 10.0f));
-	CapsuleComponent->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-	CapsuleComponent->bGenerateOverlapEvents = true;
-	CapsuleComponent->SetNotifyRigidBodyCollision(true);
-	CapsuleComponent->SetCollisionObjectType(ECollisionChannel::ECC_Pawn);
-	CapsuleComponent->SetCanEverAffectNavigation(false);
-	CapsuleComponent->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
-	CapsuleComponent->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldStatic, ECollisionResponse::ECR_Block);
-	CapsuleComponent->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldDynamic, ECollisionResponse::ECR_Block);
-	CapsuleComponent->SetSimulatePhysics(true);
-	CapsuleComponent->SetEnableGravity(false);
-	CapsuleComponent->SetAngularDamping(0.0f);
-	CapsuleComponent->SetLinearDamping(0.0f);
-	CapsuleComponent->SetConstraintMode(EDOFMode::YZPlane);
-	CapsuleComponent->BodyInstance.bLockXRotation = true;
-	CapsuleComponent->BodyInstance.bLockYRotation = true;
-	CapsuleComponent->BodyInstance.bLockZRotation = true;
-	CapsuleComponent->BodyInstance.bLockXTranslation = true;
-	//CapsuleComponent->SetHiddenInGame(false);
-	CapsuleComponent->WakeRigidBody();
-	CapsuleComponent->OnComponentBeginOverlap.AddDynamic(this, &APlayerPawn::BeginOverlap);
-	CapsuleComponent->OnComponentEndOverlap.AddDynamic(this, &APlayerPawn::EndOverlap);
-	CapsuleComponent->OnComponentHit.AddDynamic(this, &APlayerPawn::Hit);
-	CapsuleComponent->SetupAttachment(RootComponent);
-	//RootComponent = CapsuleComponent;
+	// Set up the collision capsule
+	CapsuleComponent = CreateCapsuleComponent(RootComponent);
 
-	// Set up mesh component
-	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(
-		TEXT("MeshComponent"));
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshObj(
-		TEXT("StaticMesh'/Game/Models/Ship/zynaps_ship.zynaps_ship'"));
-	if (MeshObj.Succeeded())
-	{
-		MeshComponent->SetStaticMesh(MeshObj.Object);
-		MeshComponent->SetRelativeLocation(FVector(0.0f, -3.5f, -7.0f));
-		MeshComponent->SetRelativeRotation(FRotator(0.0f, 0.0f, 90.0f));
-		MeshComponent->SetRelativeScale3D(FVector(1.0f / 12.0f, 0.1f, 0.1f));
-		MeshComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-		MeshComponent->SetSimulatePhysics(false);
-		MeshComponent->SetupAttachment(CapsuleComponent);
-	}
+	// Set up the mesh component
+	MeshComponent = CreateMeshComponent(CapsuleComponent);
 
-	// Set up the engine particle system
+	// Set up the engine thrust particle system
 	EngineThrustSocketName = TEXT("EngineThrust");
-	EnginePartSystemComponent = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("EnginePartSystemComponent"));
-	static ConstructorHelpers::FObjectFinder<UParticleSystem> PartSystem(
-		TEXT("ParticleSystem'/Game/Models/ThrustParticle/EngineThrustSystem.EngineThrustSystem'"));
-	if (PartSystem.Succeeded())
-	{
-		EnginePartSystemComponent->SetTemplate(PartSystem.Object);
-		EnginePartSystemComponent->SetRelativeScale3D(FVector(1.5f, 0.5f, 1.5f));
-		EnginePartSystemComponent->bAutoActivate = true;
-		EnginePartSystemComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-		EnginePartSystemComponent->SetSimulatePhysics(false);
-		EnginePartSystemComponent->SetupAttachment(MeshComponent, EngineThrustSocketName);
-	}
+	EnginePartSystemComponent = CreateEngineThrustParticleSystem(MeshComponent, EngineThrustSocketName);
 
 	// Set up the Projector 2D component
-	Projector2DComponent = CreateDefaultSubobject<UProjector2DComponent>(TEXT("Projector2DComponent"));
+	Projector2DComponent = CreateProjector2DComponent();
 
 	// Sets this pawn to be controlled by the lowest-numbered player
 	AutoPossessPlayer = EAutoReceiveInput::Player0;
@@ -99,6 +50,102 @@ APlayerPawn::APlayerPawn() : Super()
 	RightCannonSocketName = TEXT("RightCannon");
 	TopCannonSocketName = TEXT("TopCannon");
 	NextCannon = RightCannon;
+}
+
+// Creates the capsule component used for collision detection
+UCapsuleComponent* APlayerPawn::CreateCapsuleComponent(USceneComponent* Parent)
+{
+	UCapsuleComponent* Component = CreateDefaultSubobject<UCapsuleComponent>(TEXT("CapsuleComponent"));
+	Component->InitCapsuleSize(18.0f, 32.0f);
+	Component->SetWorldLocation(FVector(0.0f, 0.0f, 0.0f));
+	Component->SetWorldRotation(FRotator(0.0f, 180.0f, -90.0f));
+	Component->SetWorldScale3D(FVector(12.0f, 10.0f, 10.0f));
+	Component->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	Component->bGenerateOverlapEvents = true;
+	Component->SetNotifyRigidBodyCollision(true);
+	Component->SetCollisionObjectType(ECollisionChannel::ECC_Pawn);
+	Component->SetCanEverAffectNavigation(false);
+	Component->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+	Component->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldStatic, ECollisionResponse::ECR_Block);
+	Component->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldDynamic, ECollisionResponse::ECR_Block);
+	Component->SetSimulatePhysics(true);
+	Component->SetEnableGravity(false);
+	Component->SetAngularDamping(0.0f);
+	Component->SetLinearDamping(0.0f);
+	Component->SetConstraintMode(EDOFMode::YZPlane);
+	Component->BodyInstance.bLockXRotation = true;
+	Component->BodyInstance.bLockYRotation = true;
+	Component->BodyInstance.bLockZRotation = true;
+	Component->BodyInstance.bLockXTranslation = true;
+	//Component->SetHiddenInGame(false);
+	Component->WakeRigidBody();
+	Component->OnComponentBeginOverlap.AddDynamic(this, &APlayerPawn::BeginOverlap);
+	Component->OnComponentEndOverlap.AddDynamic(this, &APlayerPawn::EndOverlap);
+	Component->OnComponentHit.AddDynamic(this, &APlayerPawn::Hit);
+	Component->SetupAttachment(Parent);
+
+	return Component;
+}
+
+// Creates the mesh component which models the ship
+UStaticMeshComponent* APlayerPawn::CreateMeshComponent(USceneComponent* Parent)
+{
+	UStaticMeshComponent* Component = CreateDefaultSubobject<UStaticMeshComponent>(
+		TEXT("MeshComponent"));
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshObj(
+		TEXT("StaticMesh'/Game/Models/Ship/zynaps_ship.zynaps_ship'"));
+	if (MeshObj.Succeeded())
+	{
+		Component->SetStaticMesh(MeshObj.Object);
+		Component->SetRelativeLocation(FVector(0.0f, -3.5f, -7.0f));
+		Component->SetRelativeRotation(FRotator(0.0f, 0.0f, 90.0f));
+		Component->SetRelativeScale3D(FVector(1.0f / 12.0f, 0.1f, 0.1f));
+		Component->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		Component->SetSimulatePhysics(false);
+		Component->SetupAttachment(Parent);
+	}
+	else
+	{
+		UE_LOG(LogPlayerPawn, Error, 
+			TEXT("The asset StaticMesh'/Game/Models/Ship/zynaps_ship.zynaps_ship' was not found"));
+		return nullptr;
+	}
+
+	return Component;
+}
+
+// Creates the particle system for the engine thrust
+UParticleSystemComponent* APlayerPawn::CreateEngineThrustParticleSystem(USceneComponent* Parent, FName SocketName)
+{
+	UParticleSystemComponent* Component = 
+		CreateDefaultSubobject<UParticleSystemComponent>(TEXT("EnginePartSystemComponent"));
+	static ConstructorHelpers::FObjectFinder<UParticleSystem> PartSystem(
+		TEXT("ParticleSystem'/Game/Models/ThrustParticle/EngineThrustSystem.EngineThrustSystem'"));
+	if (PartSystem.Succeeded())
+	{
+		Component->SetTemplate(PartSystem.Object);
+		Component->SetRelativeScale3D(FVector(1.5f, 0.5f, 1.5f));
+		Component->bAutoActivate = true;
+		Component->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		Component->SetSimulatePhysics(false);
+		Component->SetupAttachment(Parent, SocketName);
+	}
+	else
+	{
+		UE_LOG(LogPlayerPawn, Error,
+			TEXT("The asset ParticleSystem'/Game/Models/ThrustParticle/EngineThrustSystem.EngineThrustSystem' was not found"));
+		return nullptr;
+	}
+
+	return Component;
+}
+
+// Creates the Projector 2D component
+UProjector2DComponent* APlayerPawn::CreateProjector2DComponent()
+{
+	UProjector2DComponent* Component = CreateDefaultSubobject<UProjector2DComponent>(TEXT("Projector2DComponent"));
+
+	return Component;
 }
 
 // Called when the game starts or when spawned
