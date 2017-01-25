@@ -85,6 +85,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Components)
 	UStaticMeshComponent* MeshComponent;
 
+	// Engine particle system
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Components)
+	UParticleSystemComponent* EnginePartSystemComponent;
+
 	// Projector2DComponent to make transformations to screen coordinates
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Components)
 	UProjector2DComponent* Projector2DComponent;
@@ -108,6 +112,10 @@ public:
 	// The name of the socket for the top cannon
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Actor)
 	FName TopCannonSocketName;
+
+	// The name of the socket where the engine thrust particle system will be attached
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Actor)
+	FName EngineThrustSocketName;
 
 protected:
 

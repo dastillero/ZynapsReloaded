@@ -59,6 +59,21 @@ APlayerPawn::APlayerPawn() : Super()
 		MeshComponent->SetupAttachment(CapsuleComponent);
 	}
 
+	// Set up the engine particle system
+	EngineThrustSocketName = TEXT("EngineThrust");
+	EnginePartSystemComponent = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("EnginePartSystemComponent"));
+	static ConstructorHelpers::FObjectFinder<UParticleSystem> PartSystem(
+		TEXT("ParticleSystem'/Game/Models/ThrustParticle/EngineThrustSystem.EngineThrustSystem'"));
+	if (PartSystem.Succeeded())
+	{
+		EnginePartSystemComponent->SetTemplate(PartSystem.Object);
+		EnginePartSystemComponent->SetRelativeScale3D(FVector(1.5f, 0.5f, 1.5f));
+		EnginePartSystemComponent->bAutoActivate = true;
+		EnginePartSystemComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		EnginePartSystemComponent->SetSimulatePhysics(false);
+		EnginePartSystemComponent->SetupAttachment(MeshComponent, EngineThrustSocketName);
+	}
+
 	// Set up the Projector 2D component
 	Projector2DComponent = CreateDefaultSubobject<UProjector2DComponent>(TEXT("Projector2DComponent"));
 
@@ -78,7 +93,7 @@ APlayerPawn::APlayerPawn() : Super()
 		State->SeekerMissiles = false;
 	}
 
-	// Inits shooting vars
+	// Init shooting vars
 	ProjectileClass = APlayerProjectile::StaticClass();
 	LeftCannonSocketName = TEXT("LeftCannon");
 	RightCannonSocketName = TEXT("RightCannon");
