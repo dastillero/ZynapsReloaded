@@ -11,7 +11,7 @@
 // Log category
 DECLARE_LOG_CATEGORY_EXTERN(LogPlayerPawn, Log, All);
 
-// This constants are applied to calculate collisions with the screen margins
+// This constants are applied to avoid artifacts when the player is near the screen margins
 const float LimitMarginUp = 7.0f;
 const float LimitMarginDown = 3.0f;
 const float LimitMarginLeft = 5.0f;
@@ -120,6 +120,18 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Actor)
 	FName EngineThrustSocketName;
 
+	// Maximum rotation when movins up or down
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Actor)
+	float MaxRotation;
+
+	// Rotation speed when moving up or down
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Actor)
+	float RotationSpeed;
+
+	// Rotation recovery speed when the player is not moving up or down
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Actor)
+	float RotationRecoverySpeed;
+
 protected:
 
 	// Returns the transform of a socket
@@ -148,4 +160,7 @@ private:
 
 	// The next cannon to be shot
 	uint8 NextCannon;
+
+	// Rotation to apply each frame
+	float RotationToApply;
 };

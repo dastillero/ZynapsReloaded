@@ -46,10 +46,16 @@ APlayerPawn::APlayerPawn() : Super()
 
 	// Init shooting vars
 	ProjectileClass = APlayerProjectile::StaticClass();
-	LeftCannonSocketName = TEXT("LeftCannon");
-	RightCannonSocketName = TEXT("RightCannon");
-	TopCannonSocketName = TEXT("TopCannon");
+	LeftCannonSocketName = FName("LeftCannon");
+	RightCannonSocketName = FName("RightCannon");
+	TopCannonSocketName = FName("TopCannon");
 	NextCannon = RightCannon;
+
+	// Init rotation vars
+	MaxRotation = 37.5f;
+	RotationSpeed = 250.0f;
+	RotationRecoverySpeed = 200.0f;
+	RotationToApply = 0.0f;
 }
 
 // Creates the capsule component used for collision detection
@@ -72,9 +78,9 @@ UCapsuleComponent* APlayerPawn::CreateCapsuleComponent(USceneComponent* Parent)
 	Component->SetEnableGravity(false);
 	Component->SetAngularDamping(0.0f);
 	Component->SetLinearDamping(0.0f);
-	Component->SetConstraintMode(EDOFMode::YZPlane);
+	//Component->SetConstraintMode(EDOFMode::YZPlane);
 	Component->BodyInstance.bLockXRotation = true;
-	Component->BodyInstance.bLockYRotation = true;
+	//Component->BodyInstance.bLockYRotation = true;
 	Component->BodyInstance.bLockZRotation = true;
 	Component->BodyInstance.bLockXTranslation = true;
 	//Component->SetHiddenInGame(false);
@@ -161,6 +167,58 @@ void APlayerPawn::Tick(float DeltaSeconds)
 
 	// This should be done by means of a proper PlayerCameraManager
 	CapsuleComponent->AddWorldOffset(FVector(0.0f, 1000.0f * DeltaSeconds, 0.0f));
+
+	// Apply rotation to the player
+	float CurrentRotation = CapsuleComponent->GetComponentRotation().Pitch;
+	if (RotationToApply != 0.0f)
+	{
+		// There is a rotation to apply (up or down buttons are pressed)
+		CurrentRotation += RotationToApply;
+		if (RotationToApply > 0.0f)
+		{
+			// Positive rotation
+			if (CurrentRotation > MaxRotation)
+			{
+				CurrentRotation = MaxRotation;
+			}
+		}
+		else
+		{
+			// Negative rotation
+			if (CurrentRotation < -MaxRotation)
+			{
+				CurrentRotation = -MaxRotation;
+			}
+		}
+		RotationToApply = 0.0f;
+	}
+	else
+	{
+		// There is no rotation to apply (up and down buttons are released)
+		if (CurrentRotation != 0.0f)
+		{
+			// The player is rotated
+			if (CurrentRotation > 0.0f)
+			{
+				// Positive rotation
+				CurrentRotation -= RotationRecoverySpeed * DeltaSeconds;
+				if (CurrentRotation < 0.0f)
+				{
+					CurrentRotation = 0.0f;
+				}
+			}
+			else
+			{
+				// Negative rotation
+				CurrentRotation += RotationRecoverySpeed * DeltaSeconds;
+				if (CurrentRotation > 0.0f)
+				{
+					CurrentRotation = 0.0f;
+				}
+			}
+		}
+	}
+	CapsuleComponent->SetRelativeRotation(FRotator(CurrentRotation, 180.0f, -90.0f));
 }
 
 // Returns a reference to the instance of AZynapsPlayerState or NULL if it doesn't exist
@@ -197,6 +255,9 @@ void APlayerPawn::MoveUp(float Val)
 	{
 		// Move the player
 		CapsuleComponent->SetWorldLocation(NextLocation);
+
+		// Apply rotation
+		RotationToApply = RotationSpeed * GetWorld()->GetDeltaSeconds();
 	}
 }
 
@@ -223,6 +284,9 @@ void APlayerPawn::MoveDown(float Val)
 	{
 		// Move the player
 		CapsuleComponent->SetWorldLocation(NextLocation);
+
+		// Apply rotation
+		RotationToApply = -RotationSpeed * GetWorld()->GetDeltaSeconds();
 	}
 }
 
