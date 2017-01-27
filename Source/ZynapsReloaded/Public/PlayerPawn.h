@@ -96,9 +96,13 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Components)
 	UProjector2DComponent* Projector2DComponent;
 
-	// The player's movement speed
+	// The player's initial movement speed
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Actor)
-	float MovementSpeed;
+	float InitialMovementSpeed;
+
+	// The player's initial acceleration
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Actor)
+	float InitialAcceleration;
 
 	// The type of projectile spawned when firing
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Actor)
@@ -152,6 +156,12 @@ private:
 	// Creates the Projector 2D component
 	UProjector2DComponent* CreateProjector2DComponent();
 
+	// Called from Tick() to calculate and apply movement to the player based on user input
+	void ApplyPlayerMovement(float DeltaSeconds);
+
+	// Calculates and applies rotation to the player when moving up and down
+	void ApplyPlayerRotation(float RotationToApply, float DeltaSeconds);
+
 	// Viewport size update each tick
 	FVector2D ViewportSize;
 
@@ -161,6 +171,22 @@ private:
 	// The next cannon to be shot
 	uint8 NextCannon;
 
-	// Rotation to apply each frame
-	float RotationToApply;
+	// Flag to indicate that the player should move up
+	bool bMoveUp;
+
+	// Flag to indicate that the player should move down
+	bool bMoveDown;
+
+	// Flag to indicate that the player should move left
+	bool bMoveLeft;
+
+	// Flag to indicate that the player should move right
+	bool bMoveRight;
+
+	// The player's current speed
+	FVector2D CurrentSpeed;
+
+	// The player's current rotation
+	float CurrentRotation;
+
 };

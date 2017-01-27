@@ -15,6 +15,7 @@ class ZYNAPSRELOADED_API AZynapsPlayerState : public APlayerState
 
 public:
 
+	// Score
 	UPROPERTY(Replicated, BlueprintReadWrite, Category = ZynapsState)
 	int32 GameScore;
 

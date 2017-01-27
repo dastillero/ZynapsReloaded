@@ -31,11 +31,20 @@ APlayerPawn::APlayerPawn() : Super()
 	// Sets this pawn to be controlled by the lowest-numbered player
 	AutoPossessPlayer = EAutoReceiveInput::Player0;
 
+	// Init movement vars
+	InitialMovementSpeed = 60.0f;
+	InitialAcceleration = 150.0f;
+	CurrentSpeed = FVector2D(0.0f, 0.0f);
+	bMoveUp = false;
+	bMoveDown = false;
+	bMoveLeft = false;
+	bMoveRight = false;
+
 	// Inits player state
 	AZynapsPlayerState* State = GetZynapsPlayerState();
-	MovementSpeed = 2000.0f;
 	if (State)
 	{
+		State->GameScore = 0;
 		State->Lives = 3;
 		State->SpeedUpLevel = 0;
 		State->LaserPower = 0;
@@ -55,7 +64,7 @@ APlayerPawn::APlayerPawn() : Super()
 	MaxRotation = 37.5f;
 	RotationSpeed = 250.0f;
 	RotationRecoverySpeed = 200.0f;
-	RotationToApply = 0.0f;
+	CurrentRotation = 0.0f;
 }
 
 // Creates the capsule component used for collision detection
@@ -165,15 +174,141 @@ void APlayerPawn::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
-	// This should be done by means of a proper PlayerCameraManager
+	// Apply the camera offset to the player. This should be done by means of a proper 
+	// PlayerCameraManager
 	CapsuleComponent->AddWorldOffset(FVector(0.0f, 1000.0f * DeltaSeconds, 0.0f));
 
-	// Apply rotation to the player
-	float CurrentRotation = CapsuleComponent->GetComponentRotation().Pitch;
+	// Apply player movement
+	ApplyPlayerMovement(DeltaSeconds);
+}
+
+// Called from Tick() to calculate and apply movement to the player based on user input
+void APlayerPawn::ApplyPlayerMovement(float DeltaSeconds)
+{
+	// Get the values needed to calculate the player's movement
+	float MaxMovementSpeed = InitialMovementSpeed;
+	float MaxAcceleration = InitialAcceleration;
+	AZynapsPlayerState* State = GetZynapsPlayerState();
+	if (State)
+	{
+		MaxMovementSpeed += ((float)State->SpeedUpLevel) / 10.0f;
+		MaxAcceleration += ((float)State->SpeedUpLevel) / 10.0f;
+	}
+
+	// Init rotation
+	float RotationToApply = 0.0f;
+
+	// Calculate the new vertical speed
+	if (bMoveUp && !bMoveDown)
+	{
+		// Accelerate up
+		CurrentSpeed.Y += MaxAcceleration * DeltaSeconds;
+		if (CurrentSpeed.Y > MaxMovementSpeed) CurrentSpeed.Y = MaxMovementSpeed;
+
+		// Set rotation to apply
+		RotationToApply = RotationSpeed;
+	}
+	else if (bMoveDown && !bMoveUp)
+	{
+		// Accelerate down
+		CurrentSpeed.Y -= MaxAcceleration * DeltaSeconds;
+		if (CurrentSpeed.Y < -MaxMovementSpeed) CurrentSpeed.Y = -MaxMovementSpeed;
+
+		// Set rotation to apply
+		RotationToApply = -RotationSpeed;
+	}
+	else
+	{
+		// Decelerate in the vertical axis
+		if (CurrentSpeed.Y != 0.0f)
+		{
+			if (CurrentSpeed.Y > 0.0f)
+			{
+				CurrentSpeed.Y -= MaxAcceleration * DeltaSeconds;
+				if (CurrentSpeed.Y < 0.0f) CurrentSpeed.Y = 0.0f;
+			}
+			else
+			{
+				CurrentSpeed.Y += MaxAcceleration * DeltaSeconds;
+				if (CurrentSpeed.Y > 0.0f) CurrentSpeed.Y = 0.0f;
+			}
+		}
+	}
+
+	// Calculate the new horizontal speed
+	if (bMoveLeft && !bMoveRight)
+	{
+		// Accelerate left
+		CurrentSpeed.X -= MaxAcceleration * DeltaSeconds;
+		if (CurrentSpeed.X < -MaxMovementSpeed) CurrentSpeed.X = -MaxMovementSpeed;
+	}
+	else if (bMoveRight && !bMoveLeft)
+	{
+		// Accelerate right
+		CurrentSpeed.X += MaxAcceleration * DeltaSeconds;
+		if (CurrentSpeed.X > MaxMovementSpeed) CurrentSpeed.X = MaxMovementSpeed;
+	}
+	else
+	{
+		// Decelerate in the horizontal axis
+		if (CurrentSpeed.X != 0.0f)
+		{
+			if (CurrentSpeed.X > 0.0f)
+			{
+				CurrentSpeed.X -= MaxAcceleration * DeltaSeconds;
+				if (CurrentSpeed.X < 0.0f) CurrentSpeed.X = 0.0f;
+			}
+			else
+			{
+				CurrentSpeed.X += MaxAcceleration * DeltaSeconds;
+				if (CurrentSpeed.X > 0.0f) CurrentSpeed.X = 0.0f;
+			}
+		}
+	}
+
+	// Calculate the next position to occupy
+	FVector NextLocation = CapsuleComponent->GetComponentLocation();
+	NextLocation.Z += CurrentSpeed.Y;
+	NextLocation.Y += CurrentSpeed.X;
+	FVector2D NextPosition = Projector2DComponent->ConvertToScreenCoordinates(NextLocation);
+
+	// Move the player to the next position if it is within screen bounds
+	FVector2D PlayerSize = Projector2DComponent->GetSizeInScreenCoordinates();
+
+	// Vertical axis
+	if (NextPosition.Y - PlayerSize.Y / 2 > LimitMarginUp &&
+		NextPosition.Y + PlayerSize.Y / 2 < Projector2DComponent->GetViewportSize().Y - LimitMarginDown)
+	{
+		CapsuleComponent->AddWorldOffset(FVector(0.0f, 0.0f, CurrentSpeed.Y), true);
+		ApplyPlayerRotation(RotationToApply, DeltaSeconds);
+	}
+	else
+	{
+		CurrentSpeed.Y = 0.0f;
+	}
+
+	// Horizontal axis
+	if (NextPosition.X - PlayerSize.X / 2 > LimitMarginLeft &&
+		NextPosition.X + PlayerSize.X / 2 < Projector2DComponent->GetViewportSize().X - LimitMarginRight)
+	{
+		CapsuleComponent->AddWorldOffset(FVector(0.0f, CurrentSpeed.X, 0.0f));
+	}
+	else
+	{
+		CurrentSpeed.X = 0.0f;
+	}
+
+	// Clear movement flags
+	bMoveUp = bMoveDown = bMoveLeft = bMoveRight = false;
+}
+
+// Calculates and applies rotation to the player when moving up and down
+void APlayerPawn::ApplyPlayerRotation(float RotationToApply, float DeltaSeconds)
+{
 	if (RotationToApply != 0.0f)
 	{
 		// There is a rotation to apply (up or down buttons are pressed)
-		CurrentRotation += RotationToApply;
+		CurrentRotation += RotationToApply * DeltaSeconds;
 		if (RotationToApply > 0.0f)
 		{
 			// Positive rotation
@@ -221,6 +356,7 @@ void APlayerPawn::Tick(float DeltaSeconds)
 	CapsuleComponent->SetRelativeRotation(FRotator(CurrentRotation, 180.0f, -90.0f));
 }
 
+
 // Returns a reference to the instance of AZynapsPlayerState or NULL if it doesn't exist
 AZynapsPlayerState* APlayerPawn::GetZynapsPlayerState() const
 {
@@ -235,111 +371,25 @@ AZynapsPlayerState* APlayerPawn::GetZynapsPlayerState() const
 // Called to move the player up
 void APlayerPawn::MoveUp(float Val)
 {
-	// Get the speed-up level
-	uint8 SpeedUpLevel = 0;
-	AZynapsPlayerState* State = GetZynapsPlayerState();
-	if (State) 
-	{
-		SpeedUpLevel = State->SpeedUpLevel;
-	}
-
-	// Calculate the next position
-	float Offset = (MovementSpeed + (MovementSpeed * SpeedUpLevel / 10)) * GetWorld()->GetDeltaSeconds();
-	FVector NextLocation = CapsuleComponent->GetComponentLocation();
-	NextLocation.Z += Offset;
-	FVector2D NextPosition = Projector2DComponent->ConvertToScreenCoordinates(NextLocation);
-
-	// Check that the movement is allowed
-	FVector2D PlayerSize = Projector2DComponent->GetSizeInScreenCoordinates();
-	if (NextPosition.Y - PlayerSize.Y / 2 > LimitMarginUp)
-	{
-		// Move the player
-		CapsuleComponent->SetWorldLocation(NextLocation);
-
-		// Apply rotation
-		RotationToApply = RotationSpeed * GetWorld()->GetDeltaSeconds();
-	}
+	bMoveUp = true;
 }
 
 // Called to move the player down
 void APlayerPawn::MoveDown(float Val)
 {
-	// Get the speed-up level
-	uint8 SpeedUpLevel = 0;
-	AZynapsPlayerState* State = GetZynapsPlayerState();
-	if (State)
-	{
-		SpeedUpLevel = State->SpeedUpLevel;
-	}
-
-	// Calculate the next position
-	float Offset = -(MovementSpeed + (MovementSpeed * SpeedUpLevel / 10)) * GetWorld()->GetDeltaSeconds();
-	FVector NextLocation = CapsuleComponent->GetComponentLocation();
-	NextLocation.Z += Offset;
-	FVector2D NextPosition = Projector2DComponent->ConvertToScreenCoordinates(NextLocation);
-
-	// Check that the movement is allowed
-	FVector2D PlayerSize = Projector2DComponent->GetSizeInScreenCoordinates();
-	if (NextPosition.Y + PlayerSize.Y / 2 < Projector2DComponent->GetViewportSize().Y - LimitMarginDown)
-	{
-		// Move the player
-		CapsuleComponent->SetWorldLocation(NextLocation);
-
-		// Apply rotation
-		RotationToApply = -RotationSpeed * GetWorld()->GetDeltaSeconds();
-	}
+	bMoveDown = true;
 }
 
 // Called to move the player to the left
 void APlayerPawn::MoveLeft(float Val)
 {
-	// Get the speed-up level
-	uint8 SpeedUpLevel = 0;
-	AZynapsPlayerState* State = GetZynapsPlayerState();
-	if (State)
-	{
-		SpeedUpLevel = State->SpeedUpLevel;
-	}
-
-	// Calculate the next position
-	float Offset = -(MovementSpeed + (MovementSpeed * SpeedUpLevel / 10)) * GetWorld()->GetDeltaSeconds();
-	FVector NextLocation = CapsuleComponent->GetComponentLocation();
-	NextLocation.Y += Offset;
-	FVector2D NextPosition = Projector2DComponent->ConvertToScreenCoordinates(NextLocation);
-
-	// Check that the movement is allowed
-	FVector2D PlayerSize = Projector2DComponent->GetSizeInScreenCoordinates();
-	if (NextPosition.X - PlayerSize.X / 2 > LimitMarginLeft)
-	{
-		// Move the player
-		CapsuleComponent->SetWorldLocation(NextLocation);
-	}
+	bMoveLeft = true;
 }
 
 // Called to move the player to the right
 void APlayerPawn::MoveRight(float Val)
 {
-	// Get the speed-up level
-	uint8 SpeedUpLevel = 0;
-	AZynapsPlayerState* State = GetZynapsPlayerState();
-	if (State)
-	{
-		SpeedUpLevel = State->SpeedUpLevel;
-	}
-
-	// Calculate the next position
-	float Offset = (MovementSpeed + (MovementSpeed * SpeedUpLevel / 10)) * GetWorld()->GetDeltaSeconds();
-	FVector NextLocation = CapsuleComponent->GetComponentLocation();
-	NextLocation.Y += Offset;
-	FVector2D NextPosition = Projector2DComponent->ConvertToScreenCoordinates(NextLocation);
-
-	// Check that the movement is allowed
-	FVector2D PlayerSize = Projector2DComponent->GetSizeInScreenCoordinates();
-	if (NextPosition.X + PlayerSize.X / 2 < Projector2DComponent->GetViewportSize().X - LimitMarginRight)
-	{
-		// Move the player
-		CapsuleComponent->AddWorldOffset(FVector(0.0f, Offset, 0.0f));
-	}
+	bMoveRight = true;
 }
 
 // Called to fire
@@ -366,7 +416,7 @@ void APlayerPawn::Fire()
 void APlayerPawn::Hit_Implementation(class UPrimitiveComponent* HitComp, class AActor* OtherActor,
 	class UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult &HitResult)
 {
-	PRINT("APlayerPawn::Hit");
+	//PRINT("APlayerPawn::Hit");
 
 	// Ensure the player does not change angle or direction when hits something
 	CapsuleComponent->BodyInstance.SetAngularVelocity(FVector(0.0f, 0.0f, 0.0f), false);
