@@ -162,12 +162,6 @@ private:
 	// Calculates and applies rotation to the player when moving up and down
 	void ApplyPlayerRotation(float RotationToApply, float DeltaSeconds);
 
-	// Viewport size update each tick
-	FVector2D ViewportSize;
-
-	// Scene view used to convert from world coordinates to screen coordinates
-	FSceneView* SceneView;
-
 	// The next cannon to be shot
 	uint8 NextCannon;
 
@@ -182,6 +176,11 @@ private:
 
 	// Flag to indicate that the player should move right
 	bool bMoveRight;
+
+	bool bBlockedUp;
+	bool bBlockedDown;
+	bool bBlockedLeft;
+	bool bBlockedRight;
 
 	// The player's current speed
 	FVector2D CurrentSpeed;

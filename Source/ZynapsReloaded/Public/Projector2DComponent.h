@@ -21,7 +21,7 @@ public:
 	virtual void BeginPlay() override;
 	
 	// Called every frame
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, 
+	virtual void TickComponent(float DeltaSeconds, ELevelTick TickType,
 		FActorComponentTickFunction* ThisTickFunction) override;
 
 	// Returns the viewport size
@@ -37,20 +37,10 @@ public:
 	FVector2D GetLocationInScreenCoordinates() const;
 
 	// Returns the actor's size in screen coordinates, including only the colliding components.
-	UFUNCTION(BlueprintPure, meta = (BlueprintProtected), Category = Util)
+	UFUNCTION(BlueprintPure, Category = Util)
 	FVector2D GetSizeInScreenCoordinates() const;
 
-private:
-
-	// Called each tick to update the viewport size
-	void UpdateViewportSize();
-
-	// Called each tick to update the scene view
-	void UpdateSceneView();
-
-	// Viewport size updated each tick
-	FVector2D ViewportSize;
-
-	// Scene view used to convert from world coordinates to screen coordinates
-	FSceneView* SceneView;
+	// Converts a screen coordinate to a 3D world location
+	UFUNCTION(BlueprintPure, Category = Util)
+	FVector ConvertFromScreenCoordinates(FVector2D Vector, float ViewingDistance) const;
 };

@@ -9,9 +9,8 @@ UProjector2DComponent::UProjector2DComponent()
 {
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
-	PrimaryComponentTick.bCanEverTick = true;
+	PrimaryComponentTick.bCanEverTick = false;
 }
-
 
 // Called when the game starts
 void UProjector2DComponent::BeginPlay()
@@ -19,66 +18,36 @@ void UProjector2DComponent::BeginPlay()
 	Super::BeginPlay();
 }
 
-
 // Called every frame
-void UProjector2DComponent::TickComponent( float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction )
+void UProjector2DComponent::TickComponent(float DeltaSeconds, ELevelTick TickType, 
+	FActorComponentTickFunction* ThisTickFunction)
 {
-	Super::TickComponent( DeltaTime, TickType, ThisTickFunction );
-
-	// Update viewport size and scene view
-	UpdateViewportSize();
-	UpdateSceneView();
+	Super::TickComponent(DeltaSeconds, TickType, ThisTickFunction);
 }
 
-// Called each tick to update the viewport size
-void UProjector2DComponent::UpdateViewportSize()
+// Returns the viewport size
+FVector2D UProjector2DComponent::GetViewportSize() const
 {
+	FVector2D Result = FVector2D::ZeroVector;
 	APlayerController* Controller = GetWorld()->GetFirstPlayerController();
 	if (Controller)
 	{
 		int32 Width;
 		int32 Height;
 		Controller->GetViewportSize(Width, Height);
-		ViewportSize = FVector2D(Width, Height);
+		Result = FVector2D(Width, Height);
 	}
-}
-
-// Called each tick to update the scene view
-void UProjector2DComponent::UpdateSceneView()
-{
-	APlayerController* Controller = GetWorld()->GetFirstPlayerController();
-	if (Controller)
-	{
-		ULocalPlayer* LocalPlayer = Cast<ULocalPlayer>(Controller->Player);
-		if (LocalPlayer && LocalPlayer->ViewportClient && LocalPlayer->ViewportClient->Viewport)
-		{
-			FSceneViewFamily ViewFamily(FSceneViewFamily::ConstructionValues(
-				LocalPlayer->ViewportClient->Viewport,
-				GetWorld()->Scene,
-				LocalPlayer->ViewportClient->EngineShowFlags)
-				.SetRealtimeUpdate(true));
-
-			FVector ViewLocation;
-			FRotator ViewRotation;
-			SceneView = LocalPlayer->CalcSceneView(&ViewFamily, ViewLocation, ViewRotation,
-				LocalPlayer->ViewportClient->Viewport);
-		}
-	}
-}
-
-// Returns the viewport size
-FVector2D UProjector2DComponent::GetViewportSize() const
-{
-	return ViewportSize;
+	return Result;
 }
 
 // Converts the specified vector to its projection in screen coordinates
 FVector2D UProjector2DComponent::ConvertToScreenCoordinates(FVector Vector) const
 {
 	FVector2D Result = FVector2D::ZeroVector;
-	if (SceneView)
+	APlayerController* Controller = GetWorld()->GetFirstPlayerController();
+	if (Controller)
 	{
-		SceneView->WorldToPixel(Vector, Result);
+		Controller->ProjectWorldLocationToScreen(Vector, Result, false);
 	}
 	return Result;
 }
@@ -102,4 +71,19 @@ FVector2D UProjector2DComponent::GetSizeInScreenCoordinates() const
 	float SizeX = FMath::Abs(RightVector.X - LeftVector.X);
 	float SizeY = FMath::Abs(RightVector.Y - LeftVector.Y);
 	return FVector2D(SizeX, SizeY);
+}
+
+// Converts a screen coordinate to a 3D world location
+FVector UProjector2DComponent::ConvertFromScreenCoordinates(FVector2D Vector, float ViewingDistance) const
+{
+	FVector Result = FVector::ZeroVector;
+	APlayerController* Controller = GetWorld()->GetFirstPlayerController();
+	if (Controller)
+	{
+		FVector Location;
+		FVector Direction;
+		Controller->DeprojectScreenPositionToWorld(Vector.X, Vector.Y, Location, Direction);
+		Result = Location + (Direction * ViewingDistance);
+	}
+	return Result;
 }
