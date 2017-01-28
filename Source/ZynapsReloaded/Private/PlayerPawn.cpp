@@ -265,24 +265,28 @@ void APlayerPawn::ApplyPlayerMovement(float DeltaSeconds)
 		}
 	}
 
-	// Calculate the next position to occupy
-	FVector NextLocation = CapsuleComponent->GetComponentLocation();
-	NextLocation.Z += CurrentSpeed.Y;
-	NextLocation.Y += CurrentSpeed.X;
-
-	// Move the player to the next position if it is within screen bounds. The viewing distance should be get
-	// from the camera itself instead of using a magic number
-	FVector2D ViewportSize = Projector2DComponent->GetViewportSize();
+	// Apply the player rotation and calculate its size
+	ApplyPlayerRotation(RotationToApply, DeltaSeconds);
 	FVector PlayerExtent = CapsuleComponent->Bounds.BoxExtent;
+
+	// Calculate the viewport bounds. The viewing distance should be get from the camera itself instead 
+	// of using a magic number
+	FVector2D ViewportSize = Projector2DComponent->GetViewportSize();
 	FVector TopLeftBound = Projector2DComponent->ConvertFromScreenCoordinates(FVector2D::ZeroVector, 20000);
 	FVector BottomRightBound = Projector2DComponent->ConvertFromScreenCoordinates(ViewportSize, 20000);
 	float MaxZ = TopLeftBound.Z - PlayerExtent.Z - LimitMarginUp;
 	float MinZ = BottomRightBound.Z + PlayerExtent.Z + LimitMarginDown;
 	float MinY = TopLeftBound.Y + PlayerExtent.Y + LimitMarginLeft;
 	float MaxY = BottomRightBound.Y - PlayerExtent.Y - LimitMarginRight;
+
+	// Calculate the next position to occupy
+	FVector NextLocation = CapsuleComponent->GetComponentLocation();
+	NextLocation.Z += CurrentSpeed.Y;
+	NextLocation.Y += CurrentSpeed.X;
 	NextLocation.Z = FMath::Clamp<float>(NextLocation.Z, MinZ, MaxZ);
 	NextLocation.Y = FMath::Clamp<float>(NextLocation.Y, MinY, MaxY);
-	ApplyPlayerRotation(RotationToApply, DeltaSeconds);
+
+	// Move the player to the next position if it is within screen bounds. 
 
 	// Vertical axis
 	if (NextLocation.Z < MaxZ && NextLocation.Z > MinZ)
