@@ -12,10 +12,10 @@
 DECLARE_LOG_CATEGORY_EXTERN(LogPlayerPawn, Log, All);
 
 // This constants are applied to avoid artifacts when the player is near the screen margins
-const float LimitMarginUp = 7.0f;
-const float LimitMarginDown = 3.0f;
-const float LimitMarginLeft = 5.0f;
-const float LimitMarginRight = 9.0f;
+const float LimitMarginUp = 50.0f;
+const float LimitMarginDown = 50.0f;
+const float LimitMarginLeft = 50.0f;
+const float LimitMarginRight = 50.0f;
 
 // Constants to identify the three cannons of the ship
 const uint8 RightCannon = 0;

@@ -276,18 +276,18 @@ void APlayerPawn::ApplyPlayerMovement(float DeltaSeconds)
 	FVector PlayerExtent = CapsuleComponent->Bounds.BoxExtent;
 	FVector TopLeftBound = Projector2DComponent->ConvertFromScreenCoordinates(FVector2D::ZeroVector, 20000);
 	FVector BottomRightBound = Projector2DComponent->ConvertFromScreenCoordinates(ViewportSize, 20000);
-	float MaxZ = TopLeftBound.Z - PlayerExtent.Z;
-	float MinZ = BottomRightBound.Z + PlayerExtent.Z;
-	float MinY = TopLeftBound.Y + PlayerExtent.Y;
-	float MaxY = BottomRightBound.Y - PlayerExtent.Y;
+	float MaxZ = TopLeftBound.Z - PlayerExtent.Z - LimitMarginUp;
+	float MinZ = BottomRightBound.Z + PlayerExtent.Z + LimitMarginDown;
+	float MinY = TopLeftBound.Y + PlayerExtent.Y + LimitMarginLeft;
+	float MaxY = BottomRightBound.Y - PlayerExtent.Y - LimitMarginRight;
 	NextLocation.Z = FMath::Clamp<float>(NextLocation.Z, MinZ, MaxZ);
 	NextLocation.Y = FMath::Clamp<float>(NextLocation.Y, MinY, MaxY);
+	ApplyPlayerRotation(RotationToApply, DeltaSeconds);
 
 	// Vertical axis
 	if (NextLocation.Z < MaxZ && NextLocation.Z > MinZ)
 	{
 		CapsuleComponent->SetWorldLocation(NextLocation);
-		ApplyPlayerRotation(RotationToApply, DeltaSeconds);
 	}
 	else
 	{
