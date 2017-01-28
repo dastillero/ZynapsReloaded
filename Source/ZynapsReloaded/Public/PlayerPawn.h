@@ -177,11 +177,6 @@ private:
 	// Flag to indicate that the player should move right
 	bool bMoveRight;
 
-	bool bBlockedUp;
-	bool bBlockedDown;
-	bool bBlockedLeft;
-	bool bBlockedRight;
-
 	// The player's current speed
 	FVector2D CurrentSpeed;
 
