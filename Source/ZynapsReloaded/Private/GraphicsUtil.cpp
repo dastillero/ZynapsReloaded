@@ -2,7 +2,7 @@
 
 #include "ZynapsReloaded.h"
 #include "GraphicsUtil.h"
-#include "UserSettingsUtil.h"
+#include "SettingsUtil.h"
 
 // Log category
 DEFINE_LOG_CATEGORY(LogGraphicsUtil);
@@ -67,7 +67,7 @@ TArray<FDisplayAdapterResolution> UGraphicsUtil::GetDisplayAdapterResolutions(EA
 bool UGraphicsUtil::SetDisplayAdapterResolution(FDisplayAdapterResolution Resolution, bool bFullscreen)
 {
 	// Get the user settings
-	UGameUserSettings* Settings = UUserSettingsUtil::GetGameUserSettings();
+	UGameUserSettings* Settings = USettingsUtil::GetGameUserSettings();
 	if (!Settings)
 	{
 		UE_LOG(LogGraphicsUtil, Error, TEXT("Failed to get the game user settings"));
@@ -79,14 +79,14 @@ bool UGraphicsUtil::SetDisplayAdapterResolution(FDisplayAdapterResolution Resolu
 	Settings->RequestResolutionChange(Resolution.Width, Resolution.Height, WindowMode, false);
 
 	// Save the resolution in the user settings
-	if (!UUserSettingsUtil::SetResolutionSettings(Resolution.Width, Resolution.Height, bFullscreen))
+	if (!USettingsUtil::SetResolutionSettings(Resolution.Width, Resolution.Height, bFullscreen))
 	{
 		UE_LOG(LogGraphicsUtil, Error, TEXT("The resolution user settings could not be saved"));
 		return false;
 	}
 
 	// Apply and save the settings
-	if (!UUserSettingsUtil::ApplyAndSaveDisplaySettings())
+	if (!USettingsUtil::ApplyAndSaveDisplaySettings())
 	{
 		UE_LOG(LogGraphicsUtil, Error, TEXT("Failed to apply and save the resolution user settings"));
 	}
@@ -105,7 +105,7 @@ FScalabilitySettings UGraphicsUtil::GetScalabilitySettings()
 	int32 Shadow;
 	int32 Texture;
 	int32 ViewDistance;
-	if (!UUserSettingsUtil::GetScalabilitySettings(AntiAliasing, Effects, PostProcess, Resolution, Shadow,
+	if (!USettingsUtil::GetScalabilitySettings(AntiAliasing, Effects, PostProcess, Resolution, Shadow,
 		Texture, ViewDistance))
 	{
 		UE_LOG(LogGraphicsUtil, Error,
@@ -130,7 +130,7 @@ FScalabilitySettings UGraphicsUtil::GetScalabilitySettings()
 bool UGraphicsUtil::SetScalabilitySettings(FScalabilitySettings ScalabilitySettings)
 {
 	// Get the user settings
-	UGameUserSettings* Settings = UUserSettingsUtil::GetGameUserSettings();
+	UGameUserSettings* Settings = USettingsUtil::GetGameUserSettings();
 	if (!Settings)
 	{
 		UE_LOG(LogGraphicsUtil, Error, TEXT("Failed to get the game user settings"));
@@ -138,7 +138,7 @@ bool UGraphicsUtil::SetScalabilitySettings(FScalabilitySettings ScalabilitySetti
 	}
 
 	// Set the scalability settings
-	if (!UUserSettingsUtil::SetScalabilitySettings(
+	if (!USettingsUtil::SetScalabilitySettings(
 		(int32)ScalabilitySettings.AntiAliasing,
 		(int32)ScalabilitySettings.Effects,
 		(int32)ScalabilitySettings.PostProcess,
@@ -152,7 +152,7 @@ bool UGraphicsUtil::SetScalabilitySettings(FScalabilitySettings ScalabilitySetti
 	}
 
 	// Apply and save the settings
-	if (!UUserSettingsUtil::ApplyAndSaveDisplaySettings())
+	if (!USettingsUtil::ApplyAndSaveDisplaySettings())
 	{
 		UE_LOG(LogGraphicsUtil, Error, TEXT("Failed to apply and save the scalability settings"));
 	}
@@ -167,7 +167,7 @@ bool UGraphicsUtil::SetScalabilitySettings(FScalabilitySettings ScalabilitySetti
 bool UGraphicsUtil::InitGraphics(EAspectRatio PreferredAspectRatio)
 {
 	// Is the game running for the first time?
-	UCustomGameConfig* CustomSettings = UUserSettingsUtil::GetCustomGameSettings();
+	UCustomGameConfig* CustomSettings = USettingsUtil::GetCustomGameSettings();
 	if (CustomSettings->bGraphicsInitialized)
 	{
 		// The game is not running for the first time, let the engine handle the configured resolution in
@@ -219,7 +219,7 @@ bool UGraphicsUtil::InitGraphics(EAspectRatio PreferredAspectRatio)
 
 	// The graphics settings have been initialized
 	CustomSettings->bGraphicsInitialized = true;
-	UUserSettingsUtil::ApplyAndSaveCustomGameSettings(CustomSettings);
+	USettingsUtil::ApplyAndSaveCustomGameSettings(CustomSettings);
 
 	return true;
 }

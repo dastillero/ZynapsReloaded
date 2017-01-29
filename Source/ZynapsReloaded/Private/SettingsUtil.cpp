@@ -1,29 +1,29 @@
 // Copyright (c) 2017 Bytecode Bits
 
 #include "ZynapsReloaded.h"
-#include "UserSettingsUtil.h"
+#include "SettingsUtil.h"
 
 // Log category
-DEFINE_LOG_CATEGORY(LogUserSettingsUtil);
+DEFINE_LOG_CATEGORY(LogSettingsUtil);
 
 // Returns all the game user settings
-UGameUserSettings* UUserSettingsUtil::GetGameUserSettings()
+UGameUserSettings* USettingsUtil::GetGameUserSettings()
 {
 	if (GEngine)
 	{
 		return GEngine->GameUserSettings;
 	}
-	UE_LOG(LogUserSettingsUtil, Error, TEXT("Failed to get the instance of GEngine"));
+	UE_LOG(LogSettingsUtil, Error, TEXT("Failed to get the instance of GEngine"));
 	return NULL;
 }
 
 // Returns the resolution settings and returns true if everything was fine
-bool UUserSettingsUtil::GetResolutionSettings(int32& Width, int32& Height, bool& bFullscreen)
+bool USettingsUtil::GetResolutionSettings(int32& Width, int32& Height, bool& bFullscreen)
 {
-	UGameUserSettings* Settings = UUserSettingsUtil::GetGameUserSettings();
+	UGameUserSettings* Settings = USettingsUtil::GetGameUserSettings();
 	if (!Settings)
 	{
-		UE_LOG(LogUserSettingsUtil, Error, TEXT("Failed to get the game user settings"));
+		UE_LOG(LogSettingsUtil, Error, TEXT("Failed to get the game user settings"));
 		return false;
 	}
 
@@ -45,12 +45,12 @@ bool UUserSettingsUtil::GetResolutionSettings(int32& Width, int32& Height, bool&
 }
 
 // Sets the resolution settings and returns true if everything was fine
-bool UUserSettingsUtil::SetResolutionSettings(int32 Width, int32 Height, bool bFullscreen)
+bool USettingsUtil::SetResolutionSettings(int32 Width, int32 Height, bool bFullscreen)
 {
-	UGameUserSettings* Settings = UUserSettingsUtil::GetGameUserSettings();
+	UGameUserSettings* Settings = USettingsUtil::GetGameUserSettings();
 	if (!Settings)
 	{
-		UE_LOG(LogUserSettingsUtil, Error, TEXT("Failed to get the game user settings"));
+		UE_LOG(LogSettingsUtil, Error, TEXT("Failed to get the game user settings"));
 		return false;
 	}
 
@@ -60,13 +60,13 @@ bool UUserSettingsUtil::SetResolutionSettings(int32 Width, int32 Height, bool bF
 }
 
 // Returns the graphics quality and rendering settings. Returns true if successful
-bool UUserSettingsUtil::GetScalabilitySettings(int32& AntiAliasing, int32& Effects, int32& PostProcess,
+bool USettingsUtil::GetScalabilitySettings(int32& AntiAliasing, int32& Effects, int32& PostProcess,
 	int32& Resolution, int32& Shadow, int32& Texture, int32& ViewDistance)
 {
-	UGameUserSettings* Settings = UUserSettingsUtil::GetGameUserSettings();
+	UGameUserSettings* Settings = USettingsUtil::GetGameUserSettings();
 	if (!Settings)
 	{
-		UE_LOG(LogUserSettingsUtil, Error, TEXT("Failed to get the game user settings"));
+		UE_LOG(LogSettingsUtil, Error, TEXT("Failed to get the game user settings"));
 		return false;
 	}
 
@@ -82,13 +82,13 @@ bool UUserSettingsUtil::GetScalabilitySettings(int32& AntiAliasing, int32& Effec
 }
 
 // Sets the graphics quality and rendering settings and returns true on success
-bool UUserSettingsUtil::SetScalabilitySettings(int32 AntiAliasing, int32 Effects, int32 PostProcess,
+bool USettingsUtil::SetScalabilitySettings(int32 AntiAliasing, int32 Effects, int32 PostProcess,
 	int32 Resolution, int32 Shadow, int32 Texture, int32 ViewDistance)
 {
-	UGameUserSettings* Settings = UUserSettingsUtil::GetGameUserSettings();
+	UGameUserSettings* Settings = USettingsUtil::GetGameUserSettings();
 	if (!Settings)
 	{
-		UE_LOG(LogUserSettingsUtil, Error, TEXT("Failed to get the game user settings"));
+		UE_LOG(LogSettingsUtil, Error, TEXT("Failed to get the game user settings"));
 		return false;
 	}
 
@@ -104,12 +104,12 @@ bool UUserSettingsUtil::SetScalabilitySettings(int32 AntiAliasing, int32 Effects
 }
 
 // Applies and saves the display user settings
-bool UUserSettingsUtil::ApplyAndSaveDisplaySettings()
+bool USettingsUtil::ApplyAndSaveDisplaySettings()
 {
-	UGameUserSettings* Settings = UUserSettingsUtil::GetGameUserSettings();
+	UGameUserSettings* Settings = USettingsUtil::GetGameUserSettings();
 	if (!Settings)
 	{
-		UE_LOG(LogUserSettingsUtil, Error, TEXT("Failed to get the game user settings"));
+		UE_LOG(LogSettingsUtil, Error, TEXT("Failed to get the game user settings"));
 		return false;
 	}
 
@@ -121,7 +121,7 @@ bool UUserSettingsUtil::ApplyAndSaveDisplaySettings()
 }
 
 // Returns all the game custom settings
-UCustomGameConfig* UUserSettingsUtil::GetCustomGameSettings()
+UCustomGameConfig* USettingsUtil::GetCustomGameSettings()
 {
 	// This should be a singleton. Making it a static member does not work as it seems that
 	// it is being garbage-collected. A solution may be to have a GameSingleton class.
@@ -129,7 +129,10 @@ UCustomGameConfig* UUserSettingsUtil::GetCustomGameSettings()
 }
 
 // Applies and saves all the game custom settings
-void UUserSettingsUtil::ApplyAndSaveCustomGameSettings(UCustomGameConfig* CustomGameSettings)
+void USettingsUtil::ApplyAndSaveCustomGameSettings(UCustomGameConfig* CustomGameSettings)
 {
 	CustomGameSettings->SaveConfig();
 }
+
+
+
