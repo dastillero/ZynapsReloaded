@@ -3,6 +3,8 @@
 #include "ZynapsReloaded.h"
 #include "Projector2DComponent.h"
 
+// Log category
+DEFINE_LOG_CATEGORY(LogProjector2DComponent);
 
 // Sets default values for this component's properties
 UProjector2DComponent::UProjector2DComponent()
@@ -86,4 +88,33 @@ FVector UProjector2DComponent::ConvertFromScreenCoordinates(FVector2D Vector, fl
 		Result = Location + (Direction * ViewingDistance);
 	}
 	return Result;
+}
+
+// Returns the player's camera distance and aspect ratio. Returns false they cannot be obtained.
+bool UProjector2DComponent::GetCameraDistanceAndAspectRatio(float& CameraDistance, float& CameraAspectRatio) const
+{
+	APlayerController* Controller = GetWorld()->GetFirstPlayerController();
+	if (Controller && Controller->PlayerCameraManager)
+	{
+		FVector CameraLocation = Controller->PlayerCameraManager->GetCameraLocation();
+		CameraDistance = FMath::Abs(CameraLocation.X);
+		AActor* ViewTarget = Controller->PlayerCameraManager->GetViewTarget();
+		if (ViewTarget)
+		{
+			ACameraActor* Camera = Cast<ACameraActor>(ViewTarget);
+			CameraAspectRatio = Camera->GetCameraComponent()->AspectRatio;
+		}
+		else
+		{
+			UE_LOG(LogProjector2DComponent, Error, TEXT("The camera manager view target could not be retrieved"));
+			return false;
+		}
+	}
+	else
+	{
+		UE_LOG(LogProjector2DComponent, Error, TEXT("The player camera manager could not be retrieved"));
+		return false;
+	}
+
+	return true;
 }

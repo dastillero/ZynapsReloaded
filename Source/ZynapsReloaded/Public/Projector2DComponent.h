@@ -5,6 +5,9 @@
 #include "Components/ActorComponent.h"
 #include "Projector2DComponent.generated.h"
 
+// Log category
+DECLARE_LOG_CATEGORY_EXTERN(LogProjector2DComponent, Log, All);
+
 /**
  * A reusable component to convert 3D information into 2D coordinates on the screen.
  */
@@ -43,4 +46,8 @@ public:
 	// Converts a screen coordinate to a 3D world location
 	UFUNCTION(BlueprintPure, Category = Util)
 	FVector ConvertFromScreenCoordinates(FVector2D Vector, float ViewingDistance) const;
+
+	// Returns the player's camera distance and aspect ratio. Returns false they cannot be obtained.
+	UFUNCTION(BlueprintPure, Category = Util)
+	bool GetCameraDistanceAndAspectRatio(float& CameraDistance, float& CameraAspectRatio) const;
 };

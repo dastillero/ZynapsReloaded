@@ -12,8 +12,8 @@
 DECLARE_LOG_CATEGORY_EXTERN(LogPlayerPawn, Log, All);
 
 // This constants are applied to avoid artifacts when the player is near the screen margins
-const float LimitMarginUp = 50.0f;
-const float LimitMarginDown = 50.0f;
+const float LimitMarginUp = 0.0f;
+const float LimitMarginDown = 0.0f;
 const float LimitMarginLeft = 50.0f;
 const float LimitMarginRight = 50.0f;
 
@@ -141,6 +141,10 @@ protected:
 	// Returns the transform of a socket
 	UFUNCTION(BlueprintPure, meta = (BlueprintProtected), Category = ZynapsState)
 	FTransform GetSocketTransform(FName SocketName) const;
+
+	// Calculates the viewport bounds
+	UFUNCTION(BlueprintPure, meta = (BlueprintProtected), Category = ZynapsState)
+	void CalculateViewportBounds(FVector& TopLeftBound, FVector& BottomRightBound) const;
 
 private: 
 

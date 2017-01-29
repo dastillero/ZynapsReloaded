@@ -269,23 +269,35 @@ void APlayerPawn::ApplyPlayerMovement(float DeltaSeconds)
 	ApplyPlayerRotation(RotationToApply, DeltaSeconds);
 	FVector PlayerExtent = CapsuleComponent->Bounds.BoxExtent;
 
+	// Get the camera distance and aspect ratio 
+	float CameraDistance = 2000.0f;
+	float CameraAspectRatio = 16.0f / 9.0f;
+	if (!Projector2DComponent->GetCameraDistanceAndAspectRatio(CameraDistance, CameraAspectRatio))
+	{
+		UE_LOG(LogPlayerPawn, Warning, TEXT("The camera distance and aspect ratio could not be retrieved, using defaults"));
+	}
+	PRINT("CameraDistance: %f", CameraDistance);
+	PRINT("CameraAspectRatio: %f", CameraAspectRatio);
+
 	// Calculate the viewport bounds.
-	FVector TopLeftBound;
-	FVector BottomRightBound;
-	CalculateViewportBounds(TopLeftBound, BottomRightBound);
+	FVector2D ViewportSize = Projector2DComponent->GetViewportSize();
+	FVector TopLeftBound = Projector2DComponent->ConvertFromScreenCoordinates(FVector2D::ZeroVector, CameraDistance);
+	FVector BottomRightBound = Projector2DComponent->ConvertFromScreenCoordinates(ViewportSize, CameraDistance);
 	float MaxZ = TopLeftBound.Z - PlayerExtent.Z - LimitMarginUp;
 	float MinZ = BottomRightBound.Z + PlayerExtent.Z + LimitMarginDown;
 	float MinY = TopLeftBound.Y + PlayerExtent.Y + LimitMarginLeft;
 	float MaxY = BottomRightBound.Y - PlayerExtent.Y - LimitMarginRight;
+	PRINT("TopLeftBound: %s", *TopLeftBound.ToString());
+	PRINT("BottomRightBound: %s", *BottomRightBound.ToString());
 
 	// Calculate the next position to occupy
 	FVector NextLocation = CapsuleComponent->GetComponentLocation();
 	NextLocation.Z += CurrentSpeed.Y;
 	NextLocation.Y += CurrentSpeed.X;
 	NextLocation.Z = FMath::Clamp(NextLocation.Z, MinZ, MaxZ);
-	NextLocation.Y = FMath::Clamp(NextLocation.Y, MinY, MaxY);
+	NextLocation.Y = FMath::Clamp<float>(NextLocation.Y, MinY, MaxY);
 
-	// Move the player to the next position if it is within the viewport bounds. 
+	// Move the player to the next position if it is within screen bounds. 
 
 	// Vertical axis
 	if (NextLocation.Z < MaxZ && NextLocation.Z > MinZ)
@@ -365,45 +377,6 @@ void APlayerPawn::ApplyPlayerRotation(float RotationToApply, float DeltaSeconds)
 	CapsuleComponent->SetRelativeRotation(FRotator(CurrentRotation, 180.0f, -90.0f));
 }
 
-// Calculates the viewport bounds
-void APlayerPawn::CalculateViewportBounds(FVector& TopLeftBound, FVector& BottomRightBound) const
-{
-	// Get the camera distance and aspect ratio 
-	float CameraDistance = 20000.0f;
-	float CameraAspectRatio = 16.0f / 9.0f;
-	if (!Projector2DComponent->GetCameraDistanceAndAspectRatio(CameraDistance, CameraAspectRatio))
-	{
-		UE_LOG(LogPlayerPawn, Warning, TEXT("The camera distance and aspect ratio could not be retrieved, using defaults"));
-	}
-
-	// Calculate the size of black bars when a non 16:9 resolution is set
-	FVector2D ViewportSize = Projector2DComponent->GetViewportSize();
-	float ViewportAspectRatio = ViewportSize.X / ViewportSize.Y;
-	float ScreenMinX = 0.0f;
-	float ScreenMaxX = ViewportSize.X;
-	float ScreenMinY = 0.0f;
-	float ScreenMaxY = ViewportSize.Y;
-	if (ViewportAspectRatio < CameraAspectRatio)
-	{
-		// Top and bottom black bars
-		float HorizontalBlackBarHeight = (ViewportSize.Y - (ViewportSize.X / CameraAspectRatio)) / 2.0f;
-		ScreenMinY += HorizontalBlackBarHeight;
-		ScreenMaxY -= HorizontalBlackBarHeight;
-	}
-	else if (ViewportAspectRatio > CameraAspectRatio)
-	{
-		// Left and right black bars
-		float VerticalBlackBarWidth = (ViewportSize.X - (CameraAspectRatio * ViewportSize.Y)) / 2.0f;
-		ScreenMinX += VerticalBlackBarWidth;
-		ScreenMaxX -= VerticalBlackBarWidth;
-	}
-
-	// Calculate the viewport bounds.
-	TopLeftBound = Projector2DComponent->ConvertFromScreenCoordinates(FVector2D(ScreenMinX, ScreenMinY),
-		CameraDistance);
-	BottomRightBound = Projector2DComponent->ConvertFromScreenCoordinates(FVector2D(ScreenMaxX, ScreenMaxY),
-		CameraDistance);
-}
 
 // Returns a reference to the instance of AZynapsPlayerState or NULL if it doesn't exist
 AZynapsPlayerState* APlayerPawn::GetZynapsPlayerState() const
