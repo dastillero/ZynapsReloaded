@@ -4,7 +4,6 @@
 
 #include "GameFramework/Pawn.h"
 #include "ZynapsPlayerState.h"
-#include "Projector2DComponent.h"
 #include "PlayerProjectile.h"
 #include "PlayerPawn.generated.h"
 
@@ -92,10 +91,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Components)
 	UParticleSystemComponent* EnginePartSystemComponent;
 
-	// Projector2DComponent to make transformations to screen coordinates
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Components)
-	UProjector2DComponent* Projector2DComponent;
-
 	// The player's initial movement speed
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Actor)
 	float InitialMovementSpeed;
@@ -142,10 +137,6 @@ protected:
 	UFUNCTION(BlueprintPure, meta = (BlueprintProtected), Category = ZynapsState)
 	FTransform GetSocketTransform(FName SocketName) const;
 
-	// Calculates the viewport bounds
-	UFUNCTION(BlueprintPure, meta = (BlueprintProtected), Category = ZynapsState)
-	void CalculateViewportBounds(FVector& TopLeftBound, FVector& BottomRightBound) const;
-
 private: 
 
 	// Creates the capsule component used for collision detection
@@ -156,9 +147,6 @@ private:
 
 	// Creates the particle system for the engine thrust
 	UParticleSystemComponent* CreateEngineThrustParticleSystem(USceneComponent* Parent, FName SocketName);
-
-	// Creates the Projector 2D component
-	UProjector2DComponent* CreateProjector2DComponent();
 
 	// Called from Tick() to calculate and apply movement to the player based on user input
 	void ApplyPlayerMovement(float DeltaSeconds);

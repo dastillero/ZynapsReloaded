@@ -3,8 +3,10 @@
 #pragma once
 
 #include "GameFramework/Actor.h"
-#include "Projector2DComponent.h"
 #include "PlayerProjectile.generated.h"
+
+// Log category
+DECLARE_LOG_CATEGORY_EXTERN(LogPlayerProjectile, Log, All);
 
 UCLASS()
 class ZYNAPSRELOADED_API APlayerProjectile : public AActor
@@ -21,10 +23,6 @@ public:
 	// Called every frame
 	virtual void Tick( float DeltaSeconds ) override;
 
-	// Projector2DComponent to make transformations to screen coordinates
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Components)
-	UProjector2DComponent* Projector2DComponent;
-	
 protected:
 	// Checks that the projectile is within the viewport limits
 	UFUNCTION(BlueprintPure, meta = (BlueprintProtected), Category = Util)

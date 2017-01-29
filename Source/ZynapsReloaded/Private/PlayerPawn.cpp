@@ -2,6 +2,7 @@
 
 #include "ZynapsReloaded.h"
 #include "PlayerPawn.h"
+#include "ProjectionUtil.h"
 
 // Log category
 DEFINE_LOG_CATEGORY(LogPlayerPawn);
@@ -24,9 +25,6 @@ APlayerPawn::APlayerPawn() : Super()
 	// Set up the engine thrust particle system
 	EngineThrustSocketName = TEXT("EngineThrust");
 	EnginePartSystemComponent = CreateEngineThrustParticleSystem(MeshComponent, EngineThrustSocketName);
-
-	// Set up the Projector 2D component
-	Projector2DComponent = CreateProjector2DComponent();
 
 	// Sets this pawn to be controlled by the lowest-numbered player
 	AutoPossessPlayer = EAutoReceiveInput::Player0;
@@ -155,13 +153,6 @@ UParticleSystemComponent* APlayerPawn::CreateEngineThrustParticleSystem(USceneCo
 	return Component;
 }
 
-// Creates the Projector 2D component
-UProjector2DComponent* APlayerPawn::CreateProjector2DComponent()
-{
-	UProjector2DComponent* Component = CreateDefaultSubobject<UProjector2DComponent>(TEXT("Projector2DComponent"));
-	return Component;
-}
-
 // Called when the game starts or when spawned
 void APlayerPawn::BeginPlay()
 {
@@ -184,6 +175,14 @@ void APlayerPawn::Tick(float DeltaSeconds)
 // Called from Tick() to calculate and apply movement to the player based on user input
 void APlayerPawn::ApplyPlayerMovement(float DeltaSeconds)
 {
+	// Get the player controller
+	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
+	if (!PlayerController)
+	{
+		UE_LOG(LogPlayerPawn, Error, TEXT("Failed to retrieve the player controller"));
+		return;
+	}
+
 	// Get the values needed to calculate the player's movement
 	float MaxMovementSpeed = InitialMovementSpeed;
 	float MaxAcceleration = InitialAcceleration;
@@ -269,10 +268,14 @@ void APlayerPawn::ApplyPlayerMovement(float DeltaSeconds)
 	ApplyPlayerRotation(RotationToApply, DeltaSeconds);
 	FVector PlayerExtent = CapsuleComponent->Bounds.BoxExtent;
 
-	// Calculate the viewport bounds.
+	// Calculate the viewport bounds
 	FVector TopLeftBound;
 	FVector BottomRightBound;
-	CalculateViewportBounds(TopLeftBound, BottomRightBound);
+	if (!UProjectionUtil::CalculateViewportBounds(PlayerController, TopLeftBound, BottomRightBound))
+	{
+		UE_LOG(LogPlayerPawn, Error, TEXT("Failed to calculate the viewport bounds"));
+		return;
+	}
 	float MaxZ = TopLeftBound.Z - PlayerExtent.Z - LimitMarginUp;
 	float MinZ = BottomRightBound.Z + PlayerExtent.Z + LimitMarginDown;
 	float MinY = TopLeftBound.Y + PlayerExtent.Y + LimitMarginLeft;
@@ -363,46 +366,6 @@ void APlayerPawn::ApplyPlayerRotation(float RotationToApply, float DeltaSeconds)
 		}
 	}
 	CapsuleComponent->SetRelativeRotation(FRotator(CurrentRotation, 180.0f, -90.0f));
-}
-
-// Calculates the viewport bounds
-void APlayerPawn::CalculateViewportBounds(FVector& TopLeftBound, FVector& BottomRightBound) const
-{
-	// Get the camera distance and aspect ratio 
-	float CameraDistance = 20000.0f;
-	float CameraAspectRatio = 16.0f / 9.0f;
-	if (!Projector2DComponent->GetCameraDistanceAndAspectRatio(CameraDistance, CameraAspectRatio))
-	{
-		UE_LOG(LogPlayerPawn, Warning, TEXT("The camera distance and aspect ratio could not be retrieved, using defaults"));
-	}
-
-	// Calculate the size of black bars when a non 16:9 resolution is set
-	FVector2D ViewportSize = Projector2DComponent->GetViewportSize();
-	float ViewportAspectRatio = ViewportSize.X / ViewportSize.Y;
-	float ScreenMinX = 0.0f;
-	float ScreenMaxX = ViewportSize.X;
-	float ScreenMinY = 0.0f;
-	float ScreenMaxY = ViewportSize.Y;
-	if (ViewportAspectRatio < CameraAspectRatio)
-	{
-		// Top and bottom black bars
-		float HorizontalBlackBarHeight = (ViewportSize.Y - (ViewportSize.X / CameraAspectRatio)) / 2.0f;
-		ScreenMinY += HorizontalBlackBarHeight;
-		ScreenMaxY -= HorizontalBlackBarHeight;
-	}
-	else if (ViewportAspectRatio > CameraAspectRatio)
-	{
-		// Left and right black bars
-		float VerticalBlackBarWidth = (ViewportSize.X - (CameraAspectRatio * ViewportSize.Y)) / 2.0f;
-		ScreenMinX += VerticalBlackBarWidth;
-		ScreenMaxX -= VerticalBlackBarWidth;
-	}
-
-	// Calculate the viewport bounds.
-	TopLeftBound = Projector2DComponent->ConvertFromScreenCoordinates(FVector2D(ScreenMinX, ScreenMinY),
-		CameraDistance);
-	BottomRightBound = Projector2DComponent->ConvertFromScreenCoordinates(FVector2D(ScreenMaxX, ScreenMaxY),
-		CameraDistance);
 }
 
 // Returns a reference to the instance of AZynapsPlayerState or NULL if it doesn't exist

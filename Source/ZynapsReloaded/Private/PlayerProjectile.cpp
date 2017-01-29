@@ -2,7 +2,10 @@
 
 #include "ZynapsReloaded.h"
 #include "PlayerProjectile.h"
+#include "ProjectionUtil.h"
 
+// Log category
+DEFINE_LOG_CATEGORY(LogPlayerProjectile);
 
 // Sets default values
 APlayerProjectile::APlayerProjectile() : Super()
@@ -12,9 +15,6 @@ APlayerProjectile::APlayerProjectile() : Super()
 
 	// Set up the root component
 	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
-
-	// Set up the Projector 2D component
-	Projector2DComponent = CreateDefaultSubobject<UProjector2DComponent>(TEXT("Projector2DComponent"));
 }
 
 // Called when the game starts or when spawned
@@ -38,9 +38,19 @@ void APlayerProjectile::Tick(float DeltaTime)
 // Checks that the projectile is within the viewport limits
 bool APlayerProjectile::IsVisibleOnScreen() const
 {
-	FVector2D Position = Projector2DComponent->GetLocationInScreenCoordinates();
-	FVector2D Size = Projector2DComponent->GetSizeInScreenCoordinates();
-	FVector2D ViewportSize = Projector2DComponent->GetViewportSize();
+	// Get the player controller
+	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
+	if (!PlayerController)
+	{
+		UE_LOG(LogPlayerProjectile, Error, TEXT("Failed to retrieve the player controller"));
+		return false;
+	}
+
+	// Check that the projectile is within screen limits
+	AActor* Actor = (AActor*)this;
+	FVector2D Position = UProjectionUtil::GetLocationInScreenCoordinates(PlayerController, Actor);
+	FVector2D Size = UProjectionUtil::GetSizeInScreenCoordinates(PlayerController, Actor);
+	FVector2D ViewportSize = UProjectionUtil::GetViewportSize(PlayerController);
 	if (Position.X + Size.X / 2 < 0 || Position.X - Size.X / 2 > ViewportSize.X ||
 		Position.Y + Size.Y / 2 < 0 || Position.Y + Size.Y / 2 > ViewportSize.Y)
 	{
