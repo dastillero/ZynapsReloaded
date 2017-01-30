@@ -6,6 +6,9 @@
 #include "PlayerPawn.h"
 #include "ZynapsController.generated.h"
 
+// Log category
+DECLARE_LOG_CATEGORY_EXTERN(LogZynapsController, Log, All);
+
 /**
  * The default Player Controller used by StageGameMode.
  */
@@ -18,6 +21,9 @@ public:
 
 	// Sets default values for the controller
 	AZynapsController(const FObjectInitializer& ObjectInitializer);
+
+	// Called when the game starts
+	virtual void BeginPlay() override;
 	
 protected:
 
