@@ -67,8 +67,13 @@ bool UProjectionUtil::GetCameraDistanceAndAspectRatio(APlayerController* PlayerC
 		AActor* ViewTarget = PlayerController->PlayerCameraManager->GetViewTarget();
 		if (ViewTarget)
 		{
-			ACameraActor* Camera = Cast<ACameraActor>(ViewTarget);
-			CameraAspectRatio = Camera->GetCameraComponent()->AspectRatio;
+			ACameraActor* CameraActor = Cast<ACameraActor>(ViewTarget);
+			if (!CameraActor)
+			{
+				UE_LOG(LogProjectionUtil, Error, TEXT("The camera manager view target is not a camera"));
+				return false;
+			}
+			CameraAspectRatio = CameraActor->GetCameraComponent()->AspectRatio;
 		}
 		else
 		{
