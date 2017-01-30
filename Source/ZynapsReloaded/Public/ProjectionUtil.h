@@ -31,7 +31,7 @@ public:
 	UFUNCTION(BlueprintPure, Category = Utilities)
 	static FVector2D GetLocationInScreenCoordinates(APlayerController* PlayerController, AActor* Actor);
 
-	// Returns the size of the specified actor size in screen coordinates, including only the colliding components.
+	// Returns the size of the specified actor in screen coordinates, including only the colliding components.
 	UFUNCTION(BlueprintPure, Category = Utilities)
 	static FVector2D GetSizeInScreenCoordinates(APlayerController* PlayerController, AActor* Actor);
 

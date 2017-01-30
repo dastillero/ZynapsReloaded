@@ -5,16 +5,11 @@
 #include "GameFramework/Pawn.h"
 #include "ZynapsPlayerState.h"
 #include "PlayerProjectile.h"
+#include "Fly2DMovementComponent.h"
 #include "PlayerPawn.generated.h"
 
 // Log category
 DECLARE_LOG_CATEGORY_EXTERN(LogPlayerPawn, Log, All);
-
-// This constants are applied to avoid artifacts when the player is near the screen margins
-const float LimitMarginUp = 0.0f;
-const float LimitMarginDown = 0.0f;
-const float LimitMarginLeft = 50.0f;
-const float LimitMarginRight = 50.0f;
 
 // Constants to identify the three cannons of the ship
 const uint8 RightCannon = 0;
@@ -91,13 +86,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Components)
 	UParticleSystemComponent* EnginePartSystemComponent;
 
-	// The player's initial movement speed
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Actor)
-	float InitialMovementSpeed;
-
-	// The player's initial acceleration
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Actor)
-	float InitialAcceleration;
+	// Movement component
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Components)
+	UFly2DMovementComponent* MovementComponent;
 
 	// The type of projectile spawned when firing
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Actor)
@@ -119,18 +110,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Actor)
 	FName EngineThrustSocketName;
 
-	// Maximum rotation when movins up or down
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Actor)
-	float MaxRotation;
-
-	// Rotation speed when moving up or down
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Actor)
-	float RotationSpeed;
-
-	// Rotation recovery speed when the player is not moving up or down
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Actor)
-	float RotationRecoverySpeed;
-
 protected:
 
 	// Returns the transform of a socket
@@ -148,31 +127,10 @@ private:
 	// Creates the particle system for the engine thrust
 	UParticleSystemComponent* CreateEngineThrustParticleSystem(USceneComponent* Parent, FName SocketName);
 
-	// Called from Tick() to calculate and apply movement to the player based on user input
-	void ApplyPlayerMovement(float DeltaSeconds);
-
-	// Calculates and applies rotation to the player when moving up and down
-	void ApplyPlayerRotation(float RotationToApply, float DeltaSeconds);
+	// Creates the component which manages the movement of the ship
+	UFly2DMovementComponent* CreateMovementComponent();
 
 	// The next cannon to be shot
 	uint8 NextCannon;
-
-	// Flag to indicate that the player should move up
-	bool bMoveUp;
-
-	// Flag to indicate that the player should move down
-	bool bMoveDown;
-
-	// Flag to indicate that the player should move left
-	bool bMoveLeft;
-
-	// Flag to indicate that the player should move right
-	bool bMoveRight;
-
-	// The player's current speed
-	FVector2D CurrentSpeed;
-
-	// The player's current rotation
-	float CurrentRotation;
 
 };

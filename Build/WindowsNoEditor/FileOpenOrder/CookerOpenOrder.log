@@ -222,7 +222,7 @@
 "../../../ZynapsReloaded/Content/Materials/Mat_Laser.uasset" 221
 "../../../Engine/Content/BasicShapes/Sphere.uasset" 222
 "../../../ZynapsReloaded/Content/Blueprints/Player/ZynapsLaser.uasset" 223
-"../../../ZynapsReloaded/Content/Blueprints/Player/ZynapsShip.uasset" 224
+"../../../ZynapsReloaded/Content/Blueprints/Player/ZynapsPawn.uasset" 224
 "../../../ZynapsReloaded/Content/Levels/Stage_1_BuiltData.uasset" 225
 "../../../ZynapsReloaded/Content/Levels/Stage_1.umap" 226
 "../../../Engine/Content/Maps/Entry.umap" 227

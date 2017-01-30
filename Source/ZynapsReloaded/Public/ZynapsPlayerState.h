@@ -23,11 +23,11 @@ public:
 	UPROPERTY(Replicated, BlueprintReadWrite, Category = ZynapsState)
 	uint8 Lives;
 
-	// Speed up level (1 - 4)
+	// Speed up level (0 - 3)
 	UPROPERTY(Replicated, BlueprintReadWrite, Category = ZynapsState)
 	uint8 SpeedUpLevel;
 
-	// Laser power (1 - 4)
+	// Laser power (0 - 3)
 	UPROPERTY(Replicated, BlueprintReadWrite, Category = ZynapsState)
 	uint8 LaserPower;
 

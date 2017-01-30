@@ -22,6 +22,9 @@ APlayerPawn::APlayerPawn() : Super()
 	// Set up the mesh component
 	MeshComponent = CreateMeshComponent(CapsuleComponent);
 
+	// Set up the movement component
+	MovementComponent = CreateMovementComponent();
+
 	// Set up the engine thrust particle system
 	EngineThrustSocketName = TEXT("EngineThrust");
 	EnginePartSystemComponent = CreateEngineThrustParticleSystem(MeshComponent, EngineThrustSocketName);
@@ -29,16 +32,7 @@ APlayerPawn::APlayerPawn() : Super()
 	// Sets this pawn to be controlled by the lowest-numbered player
 	AutoPossessPlayer = EAutoReceiveInput::Player0;
 
-	// Init movement vars
-	InitialMovementSpeed = 60.0f;
-	InitialAcceleration = 150.0f;
-	CurrentSpeed = FVector2D(0.0f, 0.0f);
-	bMoveUp = false;
-	bMoveDown = false;
-	bMoveLeft = false;
-	bMoveRight = false;
-
-	// Inits player state
+	// Init player state
 	AZynapsPlayerState* State = GetZynapsPlayerState();
 	if (State)
 	{
@@ -57,12 +51,6 @@ APlayerPawn::APlayerPawn() : Super()
 	RightCannonSocketName = FName("RightCannon");
 	TopCannonSocketName = FName("TopCannon");
 	NextCannon = RightCannon;
-
-	// Init rotation vars
-	MaxRotation = 37.5f;
-	RotationSpeed = 250.0f;
-	RotationRecoverySpeed = 200.0f;
-	CurrentRotation = 0.0f;
 }
 
 // Creates the capsule component used for collision detection
@@ -153,6 +141,14 @@ UParticleSystemComponent* APlayerPawn::CreateEngineThrustParticleSystem(USceneCo
 	return Component;
 }
 
+// Creates the component which manages the movement of the ship
+UFly2DMovementComponent* APlayerPawn::CreateMovementComponent()
+{
+	UFly2DMovementComponent* Component = CreateDefaultSubobject<UFly2DMovementComponent>(TEXT("MovementComponent"));
+	Component->UpdatedComponent = CapsuleComponent;
+	return Component;
+}
+
 // Called when the game starts or when spawned
 void APlayerPawn::BeginPlay()
 {
@@ -167,205 +163,6 @@ void APlayerPawn::Tick(float DeltaSeconds)
 	// Apply the camera offset to the player. This should be done by means of a proper 
 	// PlayerCameraManager
 	CapsuleComponent->AddWorldOffset(FVector(0.0f, 1000.0f * DeltaSeconds, 0.0f));
-
-	// Apply player movement
-	ApplyPlayerMovement(DeltaSeconds);
-}
-
-// Called from Tick() to calculate and apply movement to the player based on user input
-void APlayerPawn::ApplyPlayerMovement(float DeltaSeconds)
-{
-	// Get the player controller
-	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
-	if (!PlayerController)
-	{
-		UE_LOG(LogPlayerPawn, Error, TEXT("Failed to retrieve the player controller"));
-		return;
-	}
-
-	// Get the values needed to calculate the player's movement
-	float MaxMovementSpeed = InitialMovementSpeed;
-	float MaxAcceleration = InitialAcceleration;
-	AZynapsPlayerState* State = GetZynapsPlayerState();
-	if (State)
-	{
-		MaxMovementSpeed += ((float)State->SpeedUpLevel) / 10.0f;
-		MaxAcceleration += ((float)State->SpeedUpLevel) / 10.0f;
-	}
-
-	// Init rotation
-	float RotationToApply = 0.0f;
-
-	// Calculate the new vertical speed
-	if (bMoveUp && !bMoveDown)
-	{
-		// Accelerate up
-		CurrentSpeed.Y += MaxAcceleration * DeltaSeconds;
-		if (CurrentSpeed.Y > MaxMovementSpeed) CurrentSpeed.Y = MaxMovementSpeed;
-
-		// Set rotation to apply
-		RotationToApply = RotationSpeed;
-	}
-	else if (bMoveDown && !bMoveUp)
-	{
-		// Accelerate down
-		CurrentSpeed.Y -= MaxAcceleration * DeltaSeconds;
-		if (CurrentSpeed.Y < -MaxMovementSpeed) CurrentSpeed.Y = -MaxMovementSpeed;
-
-		// Set rotation to apply
-		RotationToApply = -RotationSpeed;
-	}
-	else
-	{
-		// Decelerate in the vertical axis
-		if (CurrentSpeed.Y != 0.0f)
-		{
-			if (CurrentSpeed.Y > 0.0f)
-			{
-				CurrentSpeed.Y -= MaxAcceleration * DeltaSeconds;
-				if (CurrentSpeed.Y < 0.0f) CurrentSpeed.Y = 0.0f;
-			}
-			else
-			{
-				CurrentSpeed.Y += MaxAcceleration * DeltaSeconds;
-				if (CurrentSpeed.Y > 0.0f) CurrentSpeed.Y = 0.0f;
-			}
-		}
-	}
-
-	// Calculate the new horizontal speed
-	if (bMoveLeft && !bMoveRight)
-	{
-		// Accelerate left
-		CurrentSpeed.X -= MaxAcceleration * DeltaSeconds;
-		if (CurrentSpeed.X < -MaxMovementSpeed) CurrentSpeed.X = -MaxMovementSpeed;
-	}
-	else if (bMoveRight && !bMoveLeft)
-	{
-		// Accelerate right
-		CurrentSpeed.X += MaxAcceleration * DeltaSeconds;
-		if (CurrentSpeed.X > MaxMovementSpeed) CurrentSpeed.X = MaxMovementSpeed;
-	}
-	else
-	{
-		// Decelerate in the horizontal axis
-		if (CurrentSpeed.X != 0.0f)
-		{
-			if (CurrentSpeed.X > 0.0f)
-			{
-				CurrentSpeed.X -= MaxAcceleration * DeltaSeconds;
-				if (CurrentSpeed.X < 0.0f) CurrentSpeed.X = 0.0f;
-			}
-			else
-			{
-				CurrentSpeed.X += MaxAcceleration * DeltaSeconds;
-				if (CurrentSpeed.X > 0.0f) CurrentSpeed.X = 0.0f;
-			}
-		}
-	}
-
-	// Apply the player rotation and calculate its size
-	ApplyPlayerRotation(RotationToApply, DeltaSeconds);
-	FVector PlayerExtent = CapsuleComponent->Bounds.BoxExtent;
-
-	// Calculate the viewport bounds
-	FVector TopLeftBound;
-	FVector BottomRightBound;
-	if (!UProjectionUtil::CalculateViewportBounds(PlayerController, TopLeftBound, BottomRightBound))
-	{
-		UE_LOG(LogPlayerPawn, Error, TEXT("Failed to calculate the viewport bounds"));
-		return;
-	}
-	float MaxZ = TopLeftBound.Z - PlayerExtent.Z - LimitMarginUp;
-	float MinZ = BottomRightBound.Z + PlayerExtent.Z + LimitMarginDown;
-	float MinY = TopLeftBound.Y + PlayerExtent.Y + LimitMarginLeft;
-	float MaxY = BottomRightBound.Y - PlayerExtent.Y - LimitMarginRight;
-
-	// Calculate the next position to occupy
-	FVector NextLocation = CapsuleComponent->GetComponentLocation();
-	NextLocation.Z += CurrentSpeed.Y;
-	NextLocation.Y += CurrentSpeed.X;
-	NextLocation.Z = FMath::Clamp(NextLocation.Z, MinZ, MaxZ);
-	NextLocation.Y = FMath::Clamp(NextLocation.Y, MinY, MaxY);
-
-	// Move the player to the next position if it is within the viewport bounds. 
-
-	// Vertical axis
-	if (NextLocation.Z < MaxZ && NextLocation.Z > MinZ)
-	{
-		CapsuleComponent->SetWorldLocation(NextLocation);
-	}
-	else
-	{
-		CurrentSpeed.Y = 0.0f;
-	}
-
-	// Horizontal axis
-	if (NextLocation.Y > MinY && NextLocation.Y < MaxY)
-	{
-		CapsuleComponent->SetWorldLocation(NextLocation);
-	}
-	else
-	{
-		CurrentSpeed.X = 0.0f;
-	}
-
-	// Clear movement flags
-	bMoveUp = bMoveDown = bMoveLeft = bMoveRight = false;
-}
-
-// Calculates and applies rotation to the player when moving up and down
-void APlayerPawn::ApplyPlayerRotation(float RotationToApply, float DeltaSeconds)
-{
-	if (RotationToApply != 0.0f)
-	{
-		// There is a rotation to apply (up or down buttons are pressed)
-		CurrentRotation += RotationToApply * DeltaSeconds;
-		if (RotationToApply > 0.0f)
-		{
-			// Positive rotation
-			if (CurrentRotation > MaxRotation)
-			{
-				CurrentRotation = MaxRotation;
-			}
-		}
-		else
-		{
-			// Negative rotation
-			if (CurrentRotation < -MaxRotation)
-			{
-				CurrentRotation = -MaxRotation;
-			}
-		}
-		RotationToApply = 0.0f;
-	}
-	else
-	{
-		// There is no rotation to apply (up and down buttons are released)
-		if (CurrentRotation != 0.0f)
-		{
-			// The player is rotated
-			if (CurrentRotation > 0.0f)
-			{
-				// Positive rotation
-				CurrentRotation -= RotationRecoverySpeed * DeltaSeconds;
-				if (CurrentRotation < 0.0f)
-				{
-					CurrentRotation = 0.0f;
-				}
-			}
-			else
-			{
-				// Negative rotation
-				CurrentRotation += RotationRecoverySpeed * DeltaSeconds;
-				if (CurrentRotation > 0.0f)
-				{
-					CurrentRotation = 0.0f;
-				}
-			}
-		}
-	}
-	CapsuleComponent->SetRelativeRotation(FRotator(CurrentRotation, 180.0f, -90.0f));
 }
 
 // Returns a reference to the instance of AZynapsPlayerState or NULL if it doesn't exist
@@ -382,25 +179,25 @@ AZynapsPlayerState* APlayerPawn::GetZynapsPlayerState() const
 // Called to move the player up
 void APlayerPawn::MoveUp(float Val)
 {
-	bMoveUp = true;
+	MovementComponent->MoveUp(Val);
 }
 
 // Called to move the player down
 void APlayerPawn::MoveDown(float Val)
 {
-	bMoveDown = true;
+	MovementComponent->MoveDown(Val);
 }
 
 // Called to move the player to the left
 void APlayerPawn::MoveLeft(float Val)
 {
-	bMoveLeft = true;
+	MovementComponent->MoveLeft(Val);
 }
 
 // Called to move the player to the right
 void APlayerPawn::MoveRight(float Val)
 {
-	bMoveRight = true;
+	MovementComponent->MoveRight(Val);
 }
 
 // Called to fire

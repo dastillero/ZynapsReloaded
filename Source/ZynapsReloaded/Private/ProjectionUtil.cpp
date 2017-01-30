@@ -30,7 +30,7 @@ FVector2D UProjectionUtil::GetLocationInScreenCoordinates(APlayerController* Pla
 	return ConvertToScreenCoordinates(PlayerController, Actor->GetActorLocation());
 }
 
-// Returns the size of the specified actor size in screen coordinates, including only the colliding components.
+// Returns the size of the specified actor in screen coordinates, including only the colliding components.
 FVector2D UProjectionUtil::GetSizeInScreenCoordinates(APlayerController* PlayerController, AActor* Actor)
 {
 	FVector Origin;
