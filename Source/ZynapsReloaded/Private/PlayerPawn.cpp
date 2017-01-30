@@ -224,7 +224,8 @@ void APlayerPawn::Fire()
 void APlayerPawn::Hit_Implementation(class UPrimitiveComponent* HitComp, class AActor* OtherActor,
 	class UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult &HitResult)
 {
-	//PRINT("APlayerPawn::Hit");
+	// Stop the ship
+	//MovementComponent->StopMovement();
 
 	// Ensure the player does not change angle or direction when hits something
 	CapsuleComponent->BodyInstance.SetAngularVelocity(FVector(0.0f, 0.0f, 0.0f), false);

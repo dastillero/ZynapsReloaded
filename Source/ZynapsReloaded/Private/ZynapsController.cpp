@@ -2,11 +2,22 @@
 
 #include "ZynapsReloaded.h"
 #include "ZynapsController.h"
+#include "ZynapsCameraManager.h"
+
+// Log category
+DEFINE_LOG_CATEGORY(LogZynapsController);
 
 // Sets default values for the controller
 AZynapsController::AZynapsController(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
+	// Set the player camera manager
+	PlayerCameraManagerClass = AZynapsCameraManager::StaticClass();
+}
 
+// Called when the game starts
+void AZynapsController::BeginPlay()
+{
+	Super::BeginPlay();
 }
 
 // Called to bind functionality to input
@@ -92,3 +103,4 @@ APlayerPawn* AZynapsController::GetPlayerPawn() const
 {
 	return Cast<APlayerPawn>(GetPawn());
 }
+

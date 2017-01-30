@@ -49,6 +49,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = Actions)
 	void MoveRight(float Val);
 
+	// Called to stop the actor's movement
+	UFUNCTION(BlueprintCallable, Category = Actions)
+	void StopMovement();
+
 	// Updated component
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Component)
 	USceneComponent* UpdatedComponent;

@@ -166,6 +166,9 @@ void UFly2DMovementComponent::ApplyActorMovement(float DeltaSeconds)
 	NextLocation.Z = FMath::Clamp(NextLocation.Z, MinZ, MaxZ);
 	NextLocation.Y = FMath::Clamp(NextLocation.Y, MinY, MaxY);
 
+	// Move the actor to the next position
+	ComponentToUpdate->SetWorldLocation(NextLocation);
+
 	// Reset speed to zero if the actor is touching the screen bounds
 	if (NextLocation.Z >= MaxZ || NextLocation.Z <= MinZ)
 	{
@@ -175,9 +178,6 @@ void UFly2DMovementComponent::ApplyActorMovement(float DeltaSeconds)
 	{
 		CurrentSpeed.X = 0.0f;
 	}
-
-	// Move the actor to the next position
-	ComponentToUpdate->SetWorldLocation(NextLocation);
 
 	// Clear movement flags
 	bMoveUp = bMoveDown = bMoveLeft = bMoveRight = false;
@@ -260,6 +260,12 @@ void UFly2DMovementComponent::MoveLeft(float Val)
 void UFly2DMovementComponent::MoveRight(float Val)
 {
 	bMoveRight = true;
+}
+
+// Called to stop the actor's movement
+void UFly2DMovementComponent::StopMovement()
+{
+	CurrentSpeed = FVector2D::ZeroVector;
 }
 
 // Returns the owner component to update. If an updated component was not set, returns the root component
