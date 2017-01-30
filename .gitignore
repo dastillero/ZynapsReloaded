@@ -11,4 +11,4 @@ Saved
 *.xcodeproj
 *.xcworkspace
 *.blend1
-*.tmp0
+*.tmp*
