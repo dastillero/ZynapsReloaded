@@ -264,7 +264,7 @@ void APlayerPawn::Hit_Implementation(class UPrimitiveComponent* HitComp, class A
 	if (ExplosionPartSystem)
 	{
 		FTransform Transform(FRotator(0.0f, 0.0f, 0.0f), CapsuleComponent->GetComponentLocation(), 
-			FVector(10.0f, 10.0f, 10.0f));
+			FVector(8.5f, 8.5f, 8.5f));
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ExplosionPartSystem, Transform, true);
 	}
 
