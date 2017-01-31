@@ -3,6 +3,7 @@
 #include "ZynapsReloaded.h"
 #include "PlayerPawn.h"
 #include "ProjectionUtil.h"
+#include "ZynapsWorldSettings.h"
 
 // Log category
 DEFINE_LOG_CATEGORY(LogPlayerPawn);
@@ -160,9 +161,16 @@ void APlayerPawn::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
-	// Apply the camera offset to the player. This should be done by means of a proper 
-	// PlayerCameraManager
-	CapsuleComponent->AddWorldOffset(FVector(0.0f, 1000.0f * DeltaSeconds, 0.0f));
+	// Apply the camera offset to the player
+	AZynapsWorldSettings* WorldSettings = AZynapsWorldSettings::GetZynapsWorldSettings(GetWorld());
+	if (WorldSettings)
+	{
+		CapsuleComponent->AddWorldOffset(FVector(0.0f, WorldSettings->ScrollSpeed * DeltaSeconds, 0.0f));
+	}
+	else
+	{
+		UE_LOG(LogPlayerPawn, Warning, TEXT("Failed to retrieve the Zynaps stage world settings"));
+	}
 }
 
 // Returns a reference to the instance of AZynapsPlayerState or NULL if it doesn't exist
