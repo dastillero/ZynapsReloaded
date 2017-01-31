@@ -23,12 +23,15 @@ APlayerPawn::APlayerPawn() : Super()
 	// Set up the mesh component
 	MeshComponent = CreateMeshComponent(CapsuleComponent);
 
-	// Set up the movement component
-	MovementComponent = CreateMovementComponent();
-
 	// Set up the engine thrust particle system
 	EngineThrustSocketName = TEXT("EngineThrust");
 	EnginePartSystemComponent = CreateEngineThrustParticleSystem(MeshComponent, EngineThrustSocketName);
+
+	// Set up the movement component
+	MovementComponent = CreateMovementComponent();
+
+	// Set up the explosion particle system
+	ExplosionPartSystem = CreateExplosionParticleSystem();
 
 	// Sets this pawn to be controlled by the lowest-numbered player
 	AutoPossessPlayer = EAutoReceiveInput::Player0;
@@ -150,6 +153,26 @@ UFly2DMovementComponent* APlayerPawn::CreateMovementComponent()
 	return Component;
 }
 
+// Creates the explosion particle system
+UParticleSystem* APlayerPawn::CreateExplosionParticleSystem()
+{
+	UParticleSystem* Result;
+	static ConstructorHelpers::FObjectFinder<UParticleSystem> PartSystem(
+		TEXT("ParticleSystem'/Game/Models/Explosion/ExplosionSystem.ExplosionSystem'"));
+	if (PartSystem.Succeeded())
+	{
+		Result = PartSystem.Object;
+	}
+	else
+	{
+		UE_LOG(LogPlayerPawn, Error,
+			TEXT("The asset ParticleSystem'/Game/Models/Explosion/ExplosionSystem.ExplosionSystem' was not found"));
+		Result = nullptr;
+	}
+
+	return Result;
+}
+
 // Called when the game starts or when spawned
 void APlayerPawn::BeginPlay()
 {
@@ -228,17 +251,25 @@ void APlayerPawn::Fire()
 	}
 }
 
-// Called when the player hits other actor
+// Called when the player hits other actor or an obstacle
 void APlayerPawn::Hit_Implementation(class UPrimitiveComponent* HitComp, class AActor* OtherActor,
 	class UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult &HitResult)
 {
-	// Stop the ship
-	//MovementComponent->StopMovement();
-
 	// Ensure the player does not change angle or direction when hits something
 	CapsuleComponent->BodyInstance.SetAngularVelocity(FVector(0.0f, 0.0f, 0.0f), false);
 	CapsuleComponent->BodyInstance.SetLinearVelocity(FVector(0.0f, 0.0f, 0.0f), false);
 	CapsuleComponent->SetWorldRotation(FRotator(0.0f, 180.0f, -90.0f));
+
+	// Spawn an explosion at the actor's location
+	if (ExplosionPartSystem)
+	{
+		FTransform Transform(FRotator(0.0f, 0.0f, 0.0f), CapsuleComponent->GetComponentLocation(), 
+			FVector(10.0f, 10.0f, 10.0f));
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ExplosionPartSystem, Transform, true);
+	}
+
+	// Destroy the actor
+	Destroy();
 }
 
 // Called when the player begins overlapping with another actor

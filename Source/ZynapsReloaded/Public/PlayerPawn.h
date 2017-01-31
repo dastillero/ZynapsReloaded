@@ -58,7 +58,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = ZynapsActions)
 	void Fire();
 
-	// Called when a player hits other actor
+	// Called when a player hits other actor or an obstacle
 	UFUNCTION(BlueprintNativeEvent, Category = ZynapsEvents)
 	void Hit(class UPrimitiveComponent* HitComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp,
 		FVector NormalImpulse, const FHitResult &HitResult);
@@ -93,6 +93,10 @@ public:
 	// The type of projectile spawned when firing
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Actor)
 	TSubclassOf<class APlayerProjectile> ProjectileClass;
+
+	// The explosion particle system spawned when the ship is hit
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Actor)
+	UParticleSystem* ExplosionPartSystem;
 
 	// The name of the socket for the left cannon
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Actor)
@@ -129,6 +133,9 @@ private:
 
 	// Creates the component which manages the movement of the ship
 	UFly2DMovementComponent* CreateMovementComponent();
+
+	// Creates the explosion particle system
+	UParticleSystem* CreateExplosionParticleSystem();
 
 	// The next cannon to be shot
 	uint8 NextCannon;
