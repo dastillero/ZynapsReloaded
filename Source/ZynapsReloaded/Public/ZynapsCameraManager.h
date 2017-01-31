@@ -24,16 +24,4 @@ public:
 	// Performs per-tick camera update
 	virtual void UpdateCamera(float DeltaSeconds);
 
-	// Returns the camera speed
-	UFUNCTION(BlueprintPure, Category = Camera)
-	float GetCameraSpeed() const;
-
-	// Sets the camera speed
-	UFUNCTION(BlueprintCallable, Category = Camera)
-	void SetCameraSpeed(float NewCameraSpeed);
-
-private:
-
-	// Camera scroll speed
-	float CameraSpeed;
 };

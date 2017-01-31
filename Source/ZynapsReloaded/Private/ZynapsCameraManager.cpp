@@ -2,6 +2,7 @@
 
 #include "ZynapsReloaded.h"
 #include "ZynapsCameraManager.h"
+#include "ZynapsWorldSettings.h"
 
 // Log category
 DEFINE_LOG_CATEGORY(LogZynapsCameraManager);
@@ -9,8 +10,6 @@ DEFINE_LOG_CATEGORY(LogZynapsCameraManager);
 // Sets default values for the controller
 AZynapsCameraManager::AZynapsCameraManager() : Super()
 {
-	// Set the default camera speed
-	CameraSpeed = 1000.0f;
 }
 
 // Performs per-tick camera update
@@ -18,25 +17,22 @@ void AZynapsCameraManager::UpdateCamera(float DeltaSeconds)
 {
 	Super::UpdateCamera(DeltaSeconds);
 
-	// Scroll the camera
+	// Get the camera
 	AActor* Camera = GetViewTarget();
 	if (!Camera)
 	{
-		UE_LOG(LogZynapsCameraManager, Error, TEXT("Failed to retrieve view target"));
+		UE_LOG(LogZynapsCameraManager, Error, TEXT("Failed to retrieve the view target"));
 		return;
 	}
+
+	// Scroll the camera using the speed in the world settings
+	AZynapsWorldSettings* WorldSettings = AZynapsWorldSettings::GetZynapsWorldSettings(GetWorld());
+	if (!WorldSettings)
+	{
+		UE_LOG(LogZynapsCameraManager, Warning, TEXT("Failed to retrieve the Zynaps stage world settings"));
+		return;
+	}
+	float CameraSpeed = WorldSettings->ScrollSpeed;
 	GetViewTarget()->AddActorWorldOffset(FVector(0.0f, CameraSpeed * DeltaSeconds, 0.0f));
-}
-
-// Returns the camera speed
-float AZynapsCameraManager::GetCameraSpeed() const
-{
-	return CameraSpeed;
-}
-
-// Sets the camera speed
-void AZynapsCameraManager::SetCameraSpeed(float NewCameraSpeed)
-{
-	CameraSpeed = NewCameraSpeed;
 }
 
