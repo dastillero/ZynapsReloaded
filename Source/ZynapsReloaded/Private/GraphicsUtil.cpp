@@ -173,8 +173,8 @@ bool UGraphicsUtil::InitGraphics(EAspectRatio PreferredAspectRatio)
 		// The game is not running for the first time, let the engine handle the configured resolution in
 		// the user settings
 		UE_LOG(LogGraphicsUtil, Display, TEXT("Using stored user settings for graphics"));
-		//CustomSettings->bGraphicsInitialized = false;
-		//UUserSettingsUtil::ApplyAndSaveCustomGameSettings(CustomSettings);
+		CustomSettings->bGraphicsInitialized = false;
+		USettingsUtil::ApplyAndSaveCustomGameSettings(CustomSettings);
 		return true;
 	}
 
