@@ -105,6 +105,34 @@ bool USettingsUtil::SetScalabilitySettings(int32 AntiAliasing, int32 Effects, in
 	return true;
 }
 
+// Returns the status of vsync
+bool USettingsUtil::IsVSyncEnabled(bool& Result)
+{
+	UGameUserSettings* Settings = USettingsUtil::GetGameUserSettings();
+	if (!Settings)
+	{
+		UE_LOG(LogSettingsUtil, Error, TEXT("Failed to get the game user settings"));
+		return false;
+	}
+
+	Result = Settings->IsVSyncEnabled();
+	return true;
+}
+
+// Sets the status of vsync. Returns true on success
+bool USettingsUtil::SetVsyncEnabled(bool VSync)
+{
+	UGameUserSettings* Settings = USettingsUtil::GetGameUserSettings();
+	if (!Settings)
+	{
+		UE_LOG(LogSettingsUtil, Error, TEXT("Failed to get the game user settings"));
+		return false;
+	}
+
+	Settings->SetVSyncEnabled(VSync);
+	return true;
+}
+
 // Applies and saves the display user settings
 bool USettingsUtil::ApplyAndSaveDisplaySettings()
 {
@@ -116,8 +144,7 @@ bool USettingsUtil::ApplyAndSaveDisplaySettings()
 	}
 
 	Settings->ConfirmVideoMode();
-	Settings->ApplyNonResolutionSettings();
-	Settings->SaveSettings();
+	Settings->ApplySettings(false);
 
 	return true;
 }
