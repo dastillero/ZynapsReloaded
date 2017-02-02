@@ -54,6 +54,10 @@ protected:
 	UFUNCTION(BlueprintCallable, meta = (BlueprintProtected), Category = ZynapsActions)
 	void FireReleased();
 
+	// Handles back button pressed
+	UFUNCTION(BlueprintCallable, meta = (BlueprintProtected), Category = ZynapsActions)
+	void BackPressed();
+
 	// Returns the player's pawn
 	UFUNCTION(BlueprintPure, meta = (BlueprintProtected), Category = ZynapsState)
 	APlayerPawn* GetPlayerPawn() const;

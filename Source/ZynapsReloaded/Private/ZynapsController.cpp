@@ -32,6 +32,7 @@ void AZynapsController::SetupInputComponent()
 	InputComponent->BindAxis("MoveRight", this, &AZynapsController::MoveRight);
 	InputComponent->BindAction("Fire", EInputEvent::IE_Pressed, this, &AZynapsController::FirePressed);
 	InputComponent->BindAction("Fire", EInputEvent::IE_Released, this, &AZynapsController::FireReleased);
+	InputComponent->BindAction("Back", EInputEvent::IE_Pressed, this, &AZynapsController::BackPressed);
 }
 
 // Handles moving up
@@ -83,7 +84,7 @@ void AZynapsController::FirePressed()
 	}
 
 	APlayerPawn* PlayerPawn = GetPlayerPawn();
-	if (PlayerPawn != NULL)
+	if (PlayerPawn)
 	{
 		PlayerPawn->Fire();
 	}
@@ -96,6 +97,13 @@ void AZynapsController::FireReleased()
 	{
 		//GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("AZynapsController::FireReleased"));
 	}
+}
+
+// Handles back button pressed
+void AZynapsController::BackPressed()
+{
+	// Go back to the menu
+	UGameplayStatics::OpenLevel(GetWorld(), TEXT("World'/Game/Levels/Menu.Menu'"));
 }
 
 // Returns the player's pawn
