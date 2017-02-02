@@ -256,15 +256,15 @@ void APlayerPawn::Hit_Implementation(class UPrimitiveComponent* HitComp, class A
 	class UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult &HitResult)
 {
 	// Ensure the player does not change angle or direction when hits something
-	CapsuleComponent->BodyInstance.SetAngularVelocity(FVector(0.0f, 0.0f, 0.0f), false);
+	/*CapsuleComponent->BodyInstance.SetAngularVelocity(FVector(0.0f, 0.0f, 0.0f), false);
 	CapsuleComponent->BodyInstance.SetLinearVelocity(FVector(0.0f, 0.0f, 0.0f), false);
-	CapsuleComponent->SetWorldRotation(FRotator(0.0f, 180.0f, -90.0f));
+	CapsuleComponent->SetWorldRotation(FRotator(0.0f, 180.0f, -90.0f));*/
 
 	// Spawn an explosion at the actor's location
 	if (ExplosionPartSystem)
 	{
 		FTransform Transform(FRotator(0.0f, 0.0f, 0.0f), CapsuleComponent->GetComponentLocation(),
-			FVector(7.0f, 7.0f, 7.0f));
+			FVector(7.5f, 7.5f, 7.5f));
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ExplosionPartSystem, Transform, true);
 	}
 

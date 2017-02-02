@@ -9,8 +9,8 @@
 DECLARE_LOG_CATEGORY_EXTERN(LogFly2DMovementComponent, Log, All);
 
 // This constants applied to avoid artifacts when the player is near the screen bounds
-const float LimitMarginUp = 0.0f;
-const float LimitMarginDown = 0.0f;
+const float LimitMarginUp = 50.0f;
+const float LimitMarginDown = 50.0f;
 const float LimitMarginLeft = 50.0f;
 const float LimitMarginRight = 50.0f;
 
