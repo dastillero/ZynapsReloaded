@@ -263,8 +263,8 @@ void APlayerPawn::Hit_Implementation(class UPrimitiveComponent* HitComp, class A
 	// Spawn an explosion at the actor's location
 	if (ExplosionPartSystem)
 	{
-		FTransform Transform(FRotator(0.0f, 0.0f, 0.0f), CapsuleComponent->GetComponentLocation(), 
-			FVector(8.5f, 8.5f, 8.5f));
+		FTransform Transform(FRotator(0.0f, 0.0f, 0.0f), CapsuleComponent->GetComponentLocation(),
+			FVector(7.0f, 7.0f, 7.0f));
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ExplosionPartSystem, Transform, true);
 	}
 
