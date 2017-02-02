@@ -105,8 +105,9 @@ FScalabilitySettings UGraphicsUtil::GetScalabilitySettings()
 	int32 Shadow;
 	int32 Texture;
 	int32 ViewDistance;
+	int32 Foliage;
 	if (!USettingsUtil::GetScalabilitySettings(AntiAliasing, Effects, PostProcess, Resolution, Shadow,
-		Texture, ViewDistance))
+		Texture, ViewDistance, Foliage))
 	{
 		UE_LOG(LogGraphicsUtil, Error,
 			TEXT("Failed to get the scalability settings. Returning default scalability values"));
@@ -121,7 +122,8 @@ FScalabilitySettings UGraphicsUtil::GetScalabilitySettings()
 		(EScalability100)Resolution,
 		(EScalability4)Shadow,
 		(EScalability4)Texture,
-		(EScalability4)ViewDistance
+		(EScalability4)ViewDistance,
+		(EScalability4)Foliage
 	);
 }
 
@@ -145,7 +147,8 @@ bool UGraphicsUtil::SetScalabilitySettings(FScalabilitySettings ScalabilitySetti
 		(int32)ScalabilitySettings.Resolution,
 		(int32)ScalabilitySettings.Shadow,
 		(int32)ScalabilitySettings.Texture,
-		(int32)ScalabilitySettings.ViewDistance))
+		(int32)ScalabilitySettings.ViewDistance,
+		(int32)ScalabilitySettings.Foliage))
 	{
 		UE_LOG(LogGraphicsUtil, Error, TEXT("Failed to set the scalability settings"));
 		return false;

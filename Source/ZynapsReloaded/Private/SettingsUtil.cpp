@@ -61,7 +61,7 @@ bool USettingsUtil::SetResolutionSettings(int32 Width, int32 Height, bool bFulls
 
 // Returns the graphics quality and rendering settings. Returns true if successful
 bool USettingsUtil::GetScalabilitySettings(int32& AntiAliasing, int32& Effects, int32& PostProcess,
-	int32& Resolution, int32& Shadow, int32& Texture, int32& ViewDistance)
+	int32& Resolution, int32& Shadow, int32& Texture, int32& ViewDistance, int32& Foliage)
 {
 	UGameUserSettings* Settings = USettingsUtil::GetGameUserSettings();
 	if (!Settings)
@@ -77,13 +77,14 @@ bool USettingsUtil::GetScalabilitySettings(int32& AntiAliasing, int32& Effects, 
 	Shadow = Settings->ScalabilityQuality.ShadowQuality;
 	Texture = Settings->ScalabilityQuality.TextureQuality;
 	ViewDistance = Settings->ScalabilityQuality.ViewDistanceQuality;
+	Foliage = Settings->ScalabilityQuality.FoliageQuality;
 
 	return true;
 }
 
 // Sets the graphics quality and rendering settings and returns true on success
 bool USettingsUtil::SetScalabilitySettings(int32 AntiAliasing, int32 Effects, int32 PostProcess,
-	int32 Resolution, int32 Shadow, int32 Texture, int32 ViewDistance)
+	int32 Resolution, int32 Shadow, int32 Texture, int32 ViewDistance, int32 Foliage)
 {
 	UGameUserSettings* Settings = USettingsUtil::GetGameUserSettings();
 	if (!Settings)
@@ -99,6 +100,7 @@ bool USettingsUtil::SetScalabilitySettings(int32 AntiAliasing, int32 Effects, in
 	Settings->ScalabilityQuality.ShadowQuality = Shadow;
 	Settings->ScalabilityQuality.TextureQuality = Texture;
 	Settings->ScalabilityQuality.ViewDistanceQuality = ViewDistance;
+	Settings->ScalabilityQuality.FoliageQuality = Foliage;
 
 	return true;
 }
@@ -133,6 +135,3 @@ void USettingsUtil::ApplyAndSaveCustomGameSettings(UCustomGameConfig* CustomGame
 {
 	CustomGameSettings->SaveConfig();
 }
-
-
-

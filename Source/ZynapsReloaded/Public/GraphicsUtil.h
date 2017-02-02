@@ -117,11 +117,14 @@ struct FScalabilitySettings
 	UPROPERTY(BlueprintReadWrite, Category = Utility)
 	EScalability4 ViewDistance;
 
+	UPROPERTY(BlueprintReadWrite, Category = Utility)
+	EScalability4 Foliage;
+
 	// Default constructor
 	FScalabilitySettings()
 	{
 		AntiAliasing = Effects = EScalability4::Medium;
-		PostProcess = Shadow = ViewDistance = EScalability4::Low;
+		PostProcess = Shadow = ViewDistance = Foliage = EScalability4::Low;
 		Texture = EScalability4::Ultra;
 		Resolution = EScalability100::High;
 	}
@@ -129,7 +132,7 @@ struct FScalabilitySettings
 	// Constructor with parameters
 	FScalabilitySettings(EScalability4 NewAntiAliasing, EScalability4 NewEffects, EScalability4 NewPostProcess,
 		EScalability100 NewResolution, EScalability4 NewShadow, EScalability4 NewTexture,
-		EScalability4 NewViewDistance)
+		EScalability4 NewViewDistance, EScalability4 NewFoliage)
 	{
 		AntiAliasing = NewAntiAliasing;
 		Effects = NewEffects;
@@ -138,6 +141,7 @@ struct FScalabilitySettings
 		Shadow = NewShadow;
 		Texture = NewTexture;
 		ViewDistance = NewViewDistance;
+		Foliage = NewFoliage;
 	}
 };
 

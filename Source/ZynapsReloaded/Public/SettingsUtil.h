@@ -34,12 +34,12 @@ public:
 	// Returns the graphics quality and rendering settings. Returns true if successful
 	UFUNCTION(BlueprintPure, Category = Utilities)
 		static bool GetScalabilitySettings(int32& AntiAliasing, int32& Effects, int32& PostProcess,
-			int32& Resolution, int32& Shadow, int32& Texture, int32& ViewDistance);
+			int32& Resolution, int32& Shadow, int32& Texture, int32& ViewDistance, int32& Foliage);
 
 	// Sets the graphics quality and rendering settings and returns true on success
 	UFUNCTION(BlueprintCallable, Category = Utilities)
 		static bool SetScalabilitySettings(int32 AntiAliasing, int32 Effects, int32 PostProcess,
-			int32 Resolution, int32 Shadow, int32 Texture, int32 ViewDistance);
+			int32 Resolution, int32 Shadow, int32 Texture, int32 ViewDistance, int32 Foliage);
 
 	// Applies and saves the display user settings
 	UFUNCTION(BlueprintCallable, Category = Utilities)
