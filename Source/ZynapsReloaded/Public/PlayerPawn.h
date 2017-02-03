@@ -98,6 +98,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Actor)
 	UParticleSystem* ExplosionPartSystem;
 
+	// The type of camera shake used when the ship is destroyed
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Actor)
+	TSubclassOf<UCameraShake> CameraShakeClass;
+
 	// The name of the socket for the left cannon
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Actor)
 	FName LeftCannonSocketName;

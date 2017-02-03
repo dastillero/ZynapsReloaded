@@ -33,6 +33,9 @@ APlayerPawn::APlayerPawn() : Super()
 	// Set up the explosion particle system
 	ExplosionPartSystem = CreateExplosionParticleSystem();
 
+	// Set up the camera shake used when the ship is destroyed
+	//CameraShake = CreateCameraShake();
+
 	// Sets this pawn to be controlled by the lowest-numbered player
 	AutoPossessPlayer = EAutoReceiveInput::Player0;
 
@@ -266,6 +269,24 @@ void APlayerPawn::Hit_Implementation(class UPrimitiveComponent* HitComp, class A
 		FTransform Transform(FRotator(0.0f, 0.0f, 0.0f), CapsuleComponent->GetComponentLocation(),
 			FVector(7.5f, 7.5f, 7.5f));
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ExplosionPartSystem, Transform, true);
+	}
+
+	// Play the camera shake
+	if (Controller)
+	{
+		APlayerController* PlayerController = Cast<APlayerController>(Controller);
+		if (CameraShakeClass)
+		{
+			PlayerController->ClientPlayCameraShake(CameraShakeClass);
+		}
+		else
+		{
+			UE_LOG(LogPlayerPawn, Warning, TEXT("The camera shake class is not set"));
+		}
+	}
+	else
+	{
+		UE_LOG(LogPlayerPawn, Warning, TEXT("Failed to retrieve the player controller"));
 	}
 
 	// Destroy the actor
