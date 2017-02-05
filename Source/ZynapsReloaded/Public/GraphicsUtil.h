@@ -11,7 +11,7 @@ DECLARE_LOG_CATEGORY_EXTERN(LogGraphicsUtil, Log, All);
 /**
  * Enum defining several widely used aspect ratios.
  */
-UENUM()
+UENUM(BlueprintType)
 enum class EAspectRatio : uint8
 {
 	// Any aspect ratio
@@ -61,7 +61,7 @@ struct FDisplayAdapterResolution
 /**
  * Enum which names scalability settings ranging from 0 to 3
  */
-UENUM()
+UENUM(BlueprintType)
 enum class EScalability4 : uint8
 {
 	// Low quality
@@ -77,7 +77,7 @@ enum class EScalability4 : uint8
 /**
 * Enum which names scalability settings ranging from 0 to 100
 */
-UENUM()
+UENUM(BlueprintType)
 enum class EScalability100 : uint8
 {
 	// Low quality
