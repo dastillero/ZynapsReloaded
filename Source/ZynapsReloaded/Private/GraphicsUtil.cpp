@@ -7,15 +7,25 @@
 // Log category
 DEFINE_LOG_CATEGORY(LogGraphicsUtil);
 
-// Returns an array with all the resolutions available for the specified aspect ratio
-TArray<FDisplayAdapterResolution> UGraphicsUtil::GetDisplayAdapterResolutions(EAspectRatio AspectRatio)
+// Returns an array with the resolutions available for the specified aspect ratio. The number of resolutions
+// returned can be limited by the parameter MaxCount. A value of 0 for MaxCount returns all the resolutions
+// with the given aspect ratio. A value for MaxCount > 0 returns the MaxCount highest resolutions found.
+TArray<FDisplayAdapterResolution> UGraphicsUtil::GetDisplayAdapterResolutions(EAspectRatio AspectRatio, int32 MaxCount)
 {
 	TArray<FDisplayAdapterResolution> Result;
 	FScreenResolutionArray Resolutions;
 	if (RHIGetAvailableResolutions(Resolutions, true))
 	{
-		for (const FScreenResolutionRHI& Resolution : Resolutions)
+		int32 ResCount = Resolutions.Num();
+		int32 ResFirstIndex = 0;
+		if (MaxCount > 0)
 		{
+			ResFirstIndex = ResCount - MaxCount;
+			ResFirstIndex = ResFirstIndex < 0 ? 0 : ResFirstIndex;
+		}
+		for (int32 ResIndex = ResFirstIndex; ResIndex < ResCount; ResIndex++)
+		{
+			FScreenResolutionRHI Resolution = Resolutions[ResIndex];
 			FDisplayAdapterResolution Res = FDisplayAdapterResolution(
 				Resolution.Width, Resolution.Height, Resolution.RefreshRate);
 			UE_LOG(LogGraphicsUtil, VeryVerbose, TEXT("Found resolution %d X %d @ %d with aspect radio %1.2f"),
@@ -47,7 +57,7 @@ TArray<FDisplayAdapterResolution> UGraphicsUtil::GetDisplayAdapterResolutions(EA
 				UE_LOG(LogGraphicsUtil, Verbose,
 					TEXT("Adding resolution %d X %d @ %d with aspect radio %1.2f to result"),
 					Res.Width, Res.Height, Res.RefreshRate, Res.AspectRatio);
-				Result.Add(Res);
+				Result.AddUnique(Res);
 			}
 		}
 	}

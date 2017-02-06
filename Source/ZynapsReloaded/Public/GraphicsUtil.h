@@ -173,9 +173,11 @@ class ZYNAPSRELOADED_API UGraphicsUtil : public UBlueprintFunctionLibrary
 	
 public:
 
-	// Returns an array with all the resolutions available for the specified aspect ratio
+	// Returns an array with the resolutions available for the specified aspect ratio. The number of resolutions
+	// returned can be limited by the parameter MaxCount. A value of 0 for MaxCount returns all the resolutions
+	// with the given aspect ratio. A value for MaxCount > 0 returns the MaxCount highest resolutions found.
 	UFUNCTION(BlueprintPure, Category = Utilities)
-	static TArray<FDisplayAdapterResolution> GetDisplayAdapterResolutions(EAspectRatio AspectRatio);
+	static TArray<FDisplayAdapterResolution> GetDisplayAdapterResolutions(EAspectRatio AspectRatio, int32 MaxCount = 0);
 
 	// Tries to find the maximum resolution available with the given aspect ratio. If no resolutions with the aspect
 	// ratio are found, it return the maximum resolution available.
