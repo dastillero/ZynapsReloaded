@@ -120,7 +120,7 @@ bool USettingsUtil::IsVSyncEnabled(bool& Result)
 }
 
 // Sets the status of vsync. Returns true on success
-bool USettingsUtil::SetVsyncEnabled(bool VSync)
+bool USettingsUtil::SetVSyncEnabled(bool VSync)
 {
 	UGameUserSettings* Settings = USettingsUtil::GetGameUserSettings();
 	if (!Settings)

@@ -16,15 +16,8 @@ TArray<FDisplayAdapterResolution> UGraphicsUtil::GetDisplayAdapterResolutions(EA
 	{
 		for (const FScreenResolutionRHI& Resolution : Resolutions)
 		{
-			FDisplayAdapterResolution Res;
-			Res.Width = Resolution.Width;
-			Res.Height = Resolution.Height;
-			Res.RefreshRate = Resolution.RefreshRate;
-
-			// Calculate the aspect ratio
-			float TempAspectRatio = (float)Res.Width / (float)Res.Height;
-			Res.AspectRatio = ((int32)(TempAspectRatio * 100.0f)) / 100.0f; // Round to 2 decimals
-
+			FDisplayAdapterResolution Res = FDisplayAdapterResolution(
+				Resolution.Width, Resolution.Height, Resolution.RefreshRate);
 			UE_LOG(LogGraphicsUtil, VeryVerbose, TEXT("Found resolution %d X %d @ %d with aspect radio %1.2f"),
 				Res.Width, Res.Height, Res.RefreshRate, Res.AspectRatio);
 
@@ -59,6 +52,49 @@ TArray<FDisplayAdapterResolution> UGraphicsUtil::GetDisplayAdapterResolutions(EA
 		}
 	}
 
+	return Result;
+}
+
+// Tries to find the maximum resolution available with the given aspect ratio. If no resolutions with the aspect
+// ratio are found, it return the maximum resolution available.
+FDisplayAdapterResolution UGraphicsUtil::FindRecommendedDisplayAdapterResolution(EAspectRatio PreferredAspectRatio)
+{
+	FDisplayAdapterResolution Result = FDisplayAdapterResolution(1024, 768);
+	TArray<FDisplayAdapterResolution> Resolutions = GetDisplayAdapterResolutions(PreferredAspectRatio);
+	if (Resolutions.Num() < 1)
+	{
+		UE_LOG(LogGraphicsUtil, Warning,
+			TEXT("No display adapter resolutions found with the preferred aspect ratio. Finding alternative resolutions"));
+		Resolutions = GetDisplayAdapterResolutions(EAspectRatio::AR_Any);
+		if (Resolutions.Num() < 1)
+		{
+			UE_LOG(LogGraphicsUtil, Error, TEXT("No alternative display adapter resolutions found"));
+			return Result;
+		}
+	}
+	Result = Resolutions[Resolutions.Num() - 1];
+	return Result;
+}
+
+// Returns the display adapter resolution currently selected
+FDisplayAdapterResolution UGraphicsUtil::GetDisplayAdapterResolution()
+{
+	// Prepare the result resolution
+	FDisplayAdapterResolution Result;
+
+	// Get the user settings
+	UGameUserSettings* Settings = USettingsUtil::GetGameUserSettings();
+	if (!Settings)
+	{
+		UE_LOG(LogGraphicsUtil, Error, TEXT("Failed to get the game user settings"));
+		return Result;
+	}
+
+	// Get the last confirmed resolution
+	FIntPoint Res = Settings->GetScreenResolution();
+	Result = FDisplayAdapterResolution(Res.X, Res.Y);
+
+	// Return the result
 	return Result;
 }
 
@@ -163,6 +199,37 @@ bool UGraphicsUtil::SetScalabilitySettings(FScalabilitySettings ScalabilitySetti
 	return true;
 }
 
+// Return true if vsync is enabled
+bool UGraphicsUtil::IsVSyncEnabled()
+{
+	bool bResult;
+	if (!USettingsUtil::IsVSyncEnabled(bResult))
+	{
+		UE_LOG(LogGraphicsUtil, Error, TEXT("Failed to get the status of vsync"));
+	}
+	return bResult;
+}
+
+// Sets the state of vsync. Returns true on success
+bool UGraphicsUtil::SetVSyncEnabled(bool bNewVsyncEnabled)
+{
+	// Set the vsync state
+	if (!USettingsUtil::SetVSyncEnabled(bNewVsyncEnabled))
+	{
+		UE_LOG(LogGraphicsUtil, Error, TEXT("Failed to set the state of vsync"));
+		return false;
+	}
+
+	// Apply and save the settings
+	if (!USettingsUtil::ApplyAndSaveDisplaySettings())
+	{
+		UE_LOG(LogGraphicsUtil, Error, TEXT("Failed to apply and save the vsync settings"));
+		return false;
+	}
+
+	return true;
+}
+
 // Sets the display adapter resolution and scalability settings stored in the user settings. If the game is 
 // launched for the first time or the graphics settings where not initilized, sets a default resolution 
 // with the given preferred aspect ratio or a different one if the preferred cannot be set. After that, sets
@@ -176,8 +243,9 @@ bool UGraphicsUtil::InitGraphics(EAspectRatio PreferredAspectRatio)
 		// The game is not running for the first time, let the engine handle the configured resolution in
 		// the user settings
 		UE_LOG(LogGraphicsUtil, Display, TEXT("Using stored user settings for graphics"));
-		CustomSettings->bGraphicsInitialized = false;
-		USettingsUtil::ApplyAndSaveCustomGameSettings(CustomSettings);
+		// Uncomment the following two lines for testing
+		//CustomSettings->bGraphicsInitialized = false;
+		//USettingsUtil::ApplyAndSaveCustomGameSettings(CustomSettings);
 		return true;
 	}
 
@@ -185,19 +253,7 @@ bool UGraphicsUtil::InitGraphics(EAspectRatio PreferredAspectRatio)
 	UE_LOG(LogGraphicsUtil, Display, TEXT("The graphics settings are not initialized. Choosing a display adapter resolution"));
 
 	// Choose a default screen mode
-	TArray<FDisplayAdapterResolution> Resolutions = GetDisplayAdapterResolutions(PreferredAspectRatio);
-	if (Resolutions.Num() < 1)
-	{
-		UE_LOG(LogGraphicsUtil, Warning, 
-			TEXT("No display adapter resolutions found with the preferred aspect ratio. Finding alternative resolutions"));
-		Resolutions = GetDisplayAdapterResolutions(EAspectRatio::AR_Any);
-		if (Resolutions.Num() < 1)
-		{
-			UE_LOG(LogGraphicsUtil, Error, TEXT("No alternative display adapter resolutions found"));
-			return false;
-		}
-	}
-	FDisplayAdapterResolution ChosenResolution = Resolutions[Resolutions.Num() - 1];
+	FDisplayAdapterResolution ChosenResolution = FindRecommendedDisplayAdapterResolution(PreferredAspectRatio);
 
 	// Try to set the chosen resolution
 	UE_LOG(LogGraphicsUtil, Display,
@@ -217,6 +273,13 @@ bool UGraphicsUtil::InitGraphics(EAspectRatio PreferredAspectRatio)
 	if (!SetScalabilitySettings(FScalabilitySettings()))
 	{
 		UE_LOG(LogGraphicsUtil, Error, TEXT("The graphics quality and rendering settings could not be set"));
+		return false;
+	}
+
+	// Try to set the vsync status
+	if (!SetVSyncEnabled(false))
+	{
+		UE_LOG(LogGraphicsUtil, Error, TEXT("The vsync state could not be set"));
 		return false;
 	}
 

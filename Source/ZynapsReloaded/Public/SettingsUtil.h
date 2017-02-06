@@ -47,7 +47,7 @@ public:
 
 	// Sets the status of vsync. Returns true on success
 	UFUNCTION(BlueprintCallable, Category = Utilities)
-	static bool SetVsyncEnabled(bool VSync);
+	static bool SetVSyncEnabled(bool VSync);
 
 	// Applies and saves the display user settings
 	UFUNCTION(BlueprintCallable, Category = Utilities)

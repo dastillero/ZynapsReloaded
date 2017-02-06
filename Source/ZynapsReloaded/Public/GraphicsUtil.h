@@ -42,7 +42,7 @@ struct FDisplayAdapterResolution
 	UPROPERTY(BlueprintReadOnly, Category = Utility)
 	int32 Height;
 
-	// Refresh rate
+	// Refresh rate. It is populated only when querying the available display adapter resolutions.
 	UPROPERTY(BlueprintReadOnly, Category = Utility)
 	int32 RefreshRate;
 
@@ -55,6 +55,24 @@ struct FDisplayAdapterResolution
 	{
 		Width = Height = RefreshRate = 0;
 		AspectRatio = 0.0f;
+	}
+
+	// Constructor with parameters. Aspect ratio is automatically calculated
+	FDisplayAdapterResolution(int32 NewWidth, int32 NewHeight, int32 NewRefreshRate = 0)
+	{
+		Width = NewWidth;
+		Height = NewHeight;
+		RefreshRate = NewRefreshRate;
+
+		// Calculate the aspect ratio
+		float TempAspectRatio = (float)Width / (float)Height;
+		AspectRatio = ((int32)(TempAspectRatio * 100.0f)) / 100.0f; // Round to 2 decimals
+	}
+
+	// Compares two display adapter resolutions and returns true if both have the same width and height
+	FORCEINLINE bool operator==(const FDisplayAdapterResolution& Other) const
+	{
+		return Width == Other.Width && Height == Other.Height;
 	}
 };
 
@@ -146,7 +164,7 @@ struct FScalabilitySettings
 };
 
 /**
- * A function library which contains several functions to deal with graphic modes.
+ * A function library which contains several functions to deal with graphic modes and video configuration.
  */
 UCLASS()
 class ZYNAPSRELOADED_API UGraphicsUtil : public UBlueprintFunctionLibrary
@@ -159,10 +177,19 @@ public:
 	UFUNCTION(BlueprintPure, Category = Utilities)
 	static TArray<FDisplayAdapterResolution> GetDisplayAdapterResolutions(EAspectRatio AspectRatio);
 
+	// Tries to find the maximum resolution available with the given aspect ratio. If no resolutions with the aspect
+	// ratio are found, it return the maximum resolution available.
+	UFUNCTION(BlueprintPure, Category = Utilities)
+	static FDisplayAdapterResolution FindRecommendedDisplayAdapterResolution(EAspectRatio PreferredAspectRatio);
+
+	// Returns the display adapter resolution currently selected
+	UFUNCTION(BlueprintPure, Category = Utilities)
+	static FDisplayAdapterResolution GetDisplayAdapterResolution();
+
 	// Sets a resolution in fullscreen or windowed mode. On success, saves the resolution within the user settings and
 	// returns true. Returns false if the resolution could not be set or could not be saved in the user settings.
 	UFUNCTION(BlueprintCallable, Category = Utilities)
-	static bool SetDisplayAdapterResolution(FDisplayAdapterResolution Resolution, bool bFullscreen);
+	static bool SetDisplayAdapterResolution(FDisplayAdapterResolution Resolution, bool bFullscreen = true);
 
 	// Returns the current rendering quality settings
 	UFUNCTION(BlueprintPure, Category = Utilities)
@@ -172,6 +199,14 @@ public:
 	// success
 	UFUNCTION(BlueprintCallable, Category = Utilities)
 	static bool SetScalabilitySettings(FScalabilitySettings ScalabilitySettings);
+
+	// Return true if vsync is enabled
+	UFUNCTION(BlueprintPure, Category = Utilities)
+	static bool IsVSyncEnabled();
+
+	// Sets the state of vsync. Returns true on success
+	UFUNCTION(BlueprintCallable, Category = Utilities)
+	static bool SetVSyncEnabled(bool bNewVsyncEnabled);
 
 	// Sets the display adapter resolution and scalability settings stored in the user settings. If the game is 
 	// launched for the first time or the graphics settings where not initilized, sets a default resolution 
