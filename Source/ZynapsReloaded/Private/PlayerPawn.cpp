@@ -33,24 +33,8 @@ APlayerPawn::APlayerPawn() : Super()
 	// Set up the explosion particle system
 	ExplosionPartSystem = CreateExplosionParticleSystem();
 
-	// Set up the camera shake used when the ship is destroyed
-	//CameraShake = CreateCameraShake();
-
 	// Sets this pawn to be controlled by the lowest-numbered player
 	AutoPossessPlayer = EAutoReceiveInput::Player0;
-
-	// Init player state
-	AZynapsPlayerState* State = GetZynapsPlayerState();
-	if (State)
-	{
-		State->GameScore = 0;
-		State->Lives = 3;
-		State->SpeedUpLevel = 0;
-		State->LaserPower = 0;
-		State->PlasmaBombs = false;
-		State->HomingMissiles = false;
-		State->SeekerMissiles = false;
-	}
 
 	// Init shooting vars
 	ProjectileClass = APlayerProjectile::StaticClass();
@@ -180,6 +164,15 @@ UParticleSystem* APlayerPawn::CreateExplosionParticleSystem()
 void APlayerPawn::BeginPlay()
 {
 	Super::BeginPlay();
+
+	// Init the player state
+	AZynapsPlayerState* State = GetZynapsPlayerState();
+	if (!State)
+	{
+		UE_LOG(LogPlayerPawn, Error, TEXT("Failed to retrieve the player state"));
+		return;
+	}
+	State->SetCurrentState(EPlayerState::Playing);
 }
 
 // Called every frame
@@ -195,7 +188,7 @@ void APlayerPawn::Tick(float DeltaSeconds)
 	}
 	else
 	{
-		UE_LOG(LogPlayerPawn, Warning, TEXT("Failed to retrieve the Zynaps stage world settings"));
+		UE_LOG(LogPlayerPawn, Warning, TEXT("Failed to retrieve the stage world settings"));
 	}
 }
 
@@ -258,11 +251,6 @@ void APlayerPawn::Fire()
 void APlayerPawn::Hit_Implementation(class UPrimitiveComponent* HitComp, class AActor* OtherActor,
 	class UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult &HitResult)
 {
-	// Ensure the player does not change angle or direction when hits something
-	/*CapsuleComponent->BodyInstance.SetAngularVelocity(FVector(0.0f, 0.0f, 0.0f), false);
-	CapsuleComponent->BodyInstance.SetLinearVelocity(FVector(0.0f, 0.0f, 0.0f), false);
-	CapsuleComponent->SetWorldRotation(FRotator(0.0f, 180.0f, -90.0f));*/
-
 	// Spawn an explosion at the actor's location
 	if (ExplosionPartSystem)
 	{
@@ -289,7 +277,16 @@ void APlayerPawn::Hit_Implementation(class UPrimitiveComponent* HitComp, class A
 		UE_LOG(LogPlayerPawn, Warning, TEXT("Failed to retrieve the player controller"));
 	}
 
-	// Destroy the actor
+	// Update the player state and destroy the actor
+	AZynapsPlayerState* State = GetZynapsPlayerState();
+	if (State)
+	{
+		State->SetCurrentState(EPlayerState::Destroyed);
+	}
+	else
+	{
+		UE_LOG(LogPlayerPawn, Warning, TEXT("Failed to retrieve the player state for update"));
+	}
 	Destroy();
 }
 

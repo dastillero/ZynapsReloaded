@@ -34,10 +34,6 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaSeconds) override;
 
-	// Returns a reference to the instance of AZynapsPlayerState or NULL if it doesn't exist
-	UFUNCTION(BlueprintPure, Category = ZynapsState)
-	AZynapsPlayerState* GetZynapsPlayerState() const;
-
 	// Called to move the player up
 	UFUNCTION(BlueprintCallable, Category = ZynapsActions)
 	void MoveUp(float Val);
@@ -119,6 +115,10 @@ public:
 	FName EngineThrustSocketName;
 
 protected:
+
+	// Returns a reference to the instance of AZynapsPlayerState or NULL if it doesn't exist
+	UFUNCTION(BlueprintPure, meta = (BlueprintProtected), Category = ZynapsState)
+	AZynapsPlayerState* GetZynapsPlayerState() const;
 
 	// Returns the transform of a socket
 	UFUNCTION(BlueprintPure, meta = (BlueprintProtected), Category = ZynapsState)

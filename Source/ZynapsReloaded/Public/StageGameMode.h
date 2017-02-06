@@ -6,16 +6,8 @@
 #include "PlayerPawn.h"
 #include "StageGameMode.generated.h"
 
-/**
- * Enumeration storing the states of the stage during gameplay.
- */
-UENUM()
-enum class EStageState : uint8
-{
-	EPreparing = 0,
-	EPlaying = 1,
-	EGameOver = 2
-};
+// Log category
+DECLARE_LOG_CATEGORY_EXTERN(LogStageGameMode, Log, All);
 
 /**
  * GameMode for a regular stage in the game.
@@ -32,24 +24,17 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaSeconds) override;
 
-	// Returns the current game state
-	UFUNCTION(BlueprintPure, Category = ZynapsState)
-	EStageState GetCurrentState() const;
-
-	// Sets the current game state
-	UFUNCTION(BlueprintCallable, Category = ZynapsState)
-	void SetCurrentState(EStageState State);
-
 protected:
+
 	// Retrieves the player's pawn
 	UFUNCTION(BlueprintPure, meta = (BlueprintProtected), Category = ZynapsState)
 	APlayerPawn* GetPlayerPawn() const;
 
-	// Handles a new state when it is set
-	virtual void HandleNewState(EStageState State);
+	// Retrieves the game state
+	UFUNCTION(BlueprintPure, meta = (BlueprintProtected), Category = ZynapsState)
+	AZynapsGameState* GetZynapsGameState() const;
 
-private:
-	// Current game state
-	EStageState CurrentState;
-
+	// Returns the player state
+	UFUNCTION(BlueprintPure, meta = (BlueprintProtected), Category = ZynapsState)
+	AZynapsPlayerState* GetZynapsPlayerState() const;
 };
