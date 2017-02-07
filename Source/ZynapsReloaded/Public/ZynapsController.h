@@ -24,6 +24,9 @@ public:
 
 	// Called when the game starts
 	virtual void BeginPlay() override;
+
+	// Returns true if the player has more lives available. false otherwise.
+	virtual bool CanRestartPlayer();
 	
 protected:
 

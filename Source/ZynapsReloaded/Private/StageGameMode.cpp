@@ -51,20 +51,25 @@ void AStageGameMode::Tick(float DeltaSeconds)
 		return;
 	}
 
+	// Get the player controller
+	AZynapsController* Controller = GetZynapsController();
+
 	// Update the state of the stage based on the state of the player
 	if (PlayerState->GetCurrentState() == EPlayerState::Destroyed)
 	{
 		// The player has been destroyed
-		if (PlayerState->Lives == 0)
+		if (!PlayerCanRestart(Controller))
 		{
 			// No more lives available
 			ZynapsGameState->SetCurrentState(EStageState::GameOver);
 		}
 		else
 		{
-			// More lives available
-			ZynapsGameState->SetCurrentState(EStageState::Preparing);
-			RestartPlayer(GetWorld()->GetFirstPlayerController());
+			// More lives available, set a time respawn if it was not set previously
+			if (!SpawnTimerHandle.IsValid() || !GetWorldTimerManager().IsTimerActive(SpawnTimerHandle))
+			{
+				GetWorldTimerManager().SetTimer(SpawnTimerHandle, this, &AStageGameMode::Respawn, RespawnDelay);
+			}
 		}
 	}
 	else
@@ -72,6 +77,22 @@ void AStageGameMode::Tick(float DeltaSeconds)
 		// The player is playing
 		ZynapsGameState->SetCurrentState(EStageState::Playing);
 	}
+}
+
+// Respawn the player pawn
+void AStageGameMode::Respawn()
+{
+	// Get the stage state
+	AZynapsGameState* ZynapsGameState = GetZynapsGameState();
+	if (!ZynapsGameState)
+	{
+		UE_LOG(LogStageGameMode, Error, TEXT("Failed to retrieve the game state. The player won't be respawned"));
+		return;
+	}
+
+	// Respawn the player and set the stage state to Preparing
+	RestartPlayer(GetZynapsController());
+	ZynapsGameState->SetCurrentState(EStageState::Preparing);
 }
 
 // Returns the player's pawn
@@ -97,10 +118,22 @@ AZynapsGameState* AStageGameMode::GetZynapsGameState() const
 	return Cast<AZynapsGameState>(GameState);
 }
 
+// Returns the player controller
+AZynapsController* AStageGameMode::GetZynapsController() const
+{
+	APlayerController* Controller = GetWorld()->GetFirstPlayerController();
+	if (!Controller)
+	{
+		UE_LOG(LogStageGameMode, Error, TEXT("Failed to retrieve the player controller"));
+		return nullptr;
+	}
+	return Cast<AZynapsController>(Controller);
+}
+
 // Returns the player state
 AZynapsPlayerState* AStageGameMode::GetZynapsPlayerState() const
 {
-	APlayerController* Controller = GetWorld()->GetFirstPlayerController();
+	AZynapsController* Controller = GetZynapsController();
 	if (!Controller)
 	{
 		UE_LOG(LogStageGameMode, Error, TEXT("Failed to retrieve the player controller"));
@@ -116,3 +149,4 @@ AZynapsPlayerState* AStageGameMode::GetZynapsPlayerState() const
 
 	return Cast<AZynapsPlayerState>(PlayerState);
 }
+

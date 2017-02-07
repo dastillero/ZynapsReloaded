@@ -20,6 +20,23 @@ void AZynapsController::BeginPlay()
 	Super::BeginPlay();
 }
 
+// Returns true if the player has more lives available. false otherwise.
+bool AZynapsController::CanRestartPlayer()
+{
+	if (!PlayerState)
+	{
+		return false;
+	}
+
+	AZynapsPlayerState* ZynapsPlayerState = Cast<AZynapsPlayerState>(PlayerState);
+	if (ZynapsPlayerState->Lives > 0)
+	{
+		return true;
+	}
+
+	return false;
+}
+
 // Called to bind functionality to input
 void AZynapsController::SetupInputComponent()
 {
