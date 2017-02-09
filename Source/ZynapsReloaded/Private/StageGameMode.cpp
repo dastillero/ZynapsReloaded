@@ -53,6 +53,11 @@ void AStageGameMode::Tick(float DeltaSeconds)
 
 	// Get the player controller
 	AZynapsController* Controller = GetZynapsController();
+	if (!Controller)
+	{
+		UE_LOG(LogStageGameMode, Error, TEXT("Failed to retrieve the player controller"));
+		return;
+	}
 
 	// Update the state of the stage based on the state of the player
 	if (PlayerState->GetCurrentState() == EPlayerState::Destroyed)
