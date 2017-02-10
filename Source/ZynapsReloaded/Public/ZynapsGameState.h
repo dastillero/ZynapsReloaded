@@ -40,12 +40,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = ZynapsState)
 	void SetCurrentState(EStageState State);
 
-protected:
-
-	// Handles a new state when it is set
-	UFUNCTION(BlueprintCallable, meta = (BlueprintProtected), Category = ZynapsState)
-	virtual void HandleNewState(EStageState State);
-
 private:
 
 	// Current game state

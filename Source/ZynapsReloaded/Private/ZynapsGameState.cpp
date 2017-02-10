@@ -28,27 +28,21 @@ void AZynapsGameState::SetCurrentState(EStageState State)
 		CurrentState = State;
 
 		// Handle the new state
-		HandleNewState(State);
-	}
-}
-
-// Handles a new state when it is set
-void AZynapsGameState::HandleNewState(EStageState State)
-{
-	switch (State)
-	{
-	case EStageState::Preparing:
-		UE_LOG(LogZynapsGameState, Log, TEXT("Setting new game state: Preparing"));
-		break;
-	case EStageState::Playing:
-		UE_LOG(LogZynapsGameState, Log, TEXT("Setting new game state: Playing"));
-		break;
-	case EStageState::GameOver:
-		UE_LOG(LogZynapsGameState, Log, TEXT("Setting new game state: GameOver"));
-		break;
-	default:
-		// Do nothing here
-		UE_LOG(LogZynapsGameState, Warning, TEXT("Tried to set and invalid game state"));
-		break;
+		switch (State)
+		{
+		case EStageState::Preparing:
+			UE_LOG(LogZynapsGameState, Verbose, TEXT("Setting new game state: Preparing"));
+			break;
+		case EStageState::Playing:
+			UE_LOG(LogZynapsGameState, Verbose, TEXT("Setting new game state: Playing"));
+			break;
+		case EStageState::GameOver:
+			UE_LOG(LogZynapsGameState, Verbose, TEXT("Setting new game state: GameOver"));
+			break;
+		default:
+			// Do nothing here
+			UE_LOG(LogZynapsGameState, Warning, TEXT("Tried to set and invalid game state"));
+			break;
+		}
 	}
 }

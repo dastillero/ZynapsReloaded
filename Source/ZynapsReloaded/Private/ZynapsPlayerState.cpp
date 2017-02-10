@@ -52,11 +52,11 @@ void AZynapsPlayerState::SetCurrentState(EPlayerState State)
 		switch (State)
 		{
 		case EPlayerState::Playing:
-			UE_LOG(LogZynapsPlayerState, Log, TEXT("Setting new player state: Playing"));
+			UE_LOG(LogZynapsPlayerState, Verbose, TEXT("Setting new player state: Playing"));
 			CurrentState = State;
 			break;
 		case EPlayerState::Destroyed:
-			UE_LOG(LogZynapsPlayerState, Log, TEXT("Setting new player state: Destroyed"));
+			UE_LOG(LogZynapsPlayerState, Verbose, TEXT("Setting new player state: Destroyed"));
 			CurrentState = State;
 			ReduceLives();
 			break;

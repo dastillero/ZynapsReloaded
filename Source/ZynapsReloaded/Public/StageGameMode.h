@@ -4,6 +4,7 @@
 
 #include "GameFramework/GameModeBase.h"
 #include "PlayerPawn.h"
+#include "ZynapsCameraManager.h"
 #include "StageGameMode.generated.h"
 
 // Log category
@@ -23,6 +24,9 @@ class ZYNAPSRELOADED_API AStageGameMode : public AGameModeBase
 public:
 	// Sets default values for the GameMode
 	AStageGameMode(const FObjectInitializer& ObjectInitializer);
+
+	// Called when the game starts
+	virtual void BeginPlay() override;
 	
 	// Called every frame
 	virtual void Tick(float DeltaSeconds) override;
@@ -49,9 +53,21 @@ protected:
 	UFUNCTION(BlueprintPure, meta = (BlueprintProtected), Category = ZynapsState)
 	AZynapsPlayerState* GetZynapsPlayerState() const;
 
+	// Returns the camera manager
+	UFUNCTION(BlueprintPure, meta = (BlueprintProtected), Category = ZynapsState)
+	AZynapsCameraManager* GetZynapsCameraManager() const;
+
+
 private:
 
 	// Timer handle which manages the time before spawning the player after it was destroyed
 	FTimerHandle SpawnTimerHandle;
+
+	// Player start objects in the stage
+	UPROPERTY()  // Needed to ensure garbage collection
+	TArray<APlayerStart*> PlayerStarts;
+
+	// Player start which marks the stage init
+	APlayerStart* StageInitPlayerStart;
 
 };
