@@ -24,4 +24,7 @@ public:
 	// Performs per-tick camera update
 	virtual void UpdateCamera(float DeltaSeconds);
 
+	// Sets the camera location
+	UFUNCTION(BlueprintCallable, Category = Camera)
+	void SetCameraLocation(FVector Location);
 };

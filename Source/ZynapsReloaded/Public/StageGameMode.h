@@ -13,6 +13,12 @@ DECLARE_LOG_CATEGORY_EXTERN(LogStageGameMode, Log, All);
 // Respawn delay
 const float RespawnDelay = 2.0f;
 
+// Preparing delay
+const float PreparingDelay = 2.5f;
+
+// Game over delay
+const float GameOverDelay = 4.0f;
+
 /**
  * GameMode for a regular stage in the game.
  */
@@ -33,9 +39,36 @@ public:
 
 protected:
 
-	// Respawn the player pawn
+	// Called from Tick() to evaluate the player start to be used when the player is respawned
+	UFUNCTION(BlueprintCallable, meta = (BlueprintProtected), Category = ZynapsState)
+	APlayerStart* EvaluatePlayerStartSpot();
+
+	// Handles the Preparing state
+	UFUNCTION(BlueprintCallable, meta = (BlueprintProtected), Category = ZynapsState)
+	void HandlePreparingState(AZynapsGameState* ZynapsGameState, AZynapsPlayerState* ZynapsPlayerState,
+		AZynapsController* ZynapsController);
+
+	// Handles the Playing state
+	UFUNCTION(BlueprintCallable, meta = (BlueprintProtected), Category = ZynapsState)
+	void HandlePlayingState(AZynapsGameState* ZynapsGameState, AZynapsPlayerState* ZynapsPlayerState,
+		AZynapsController* ZynapsController);
+
+	// Handles the GameOver state
+	UFUNCTION(BlueprintCallable, meta = (BlueprintProtected), Category = ZynapsState)
+	void HandleGameOverState(AZynapsGameState* ZynapsGameState, AZynapsPlayerState* ZynapsPlayerState,
+		AZynapsController* ZynapsController);
+
+	// Sets the state state to Playing
+	UFUNCTION(BlueprintCallable, meta = (BlueprintProtected), Category = ZynapsActions)
+	void Play();
+
+	// Respawn the player's pawn
 	UFUNCTION(BlueprintCallable, meta = (BlueprintProtected), Category = ZynapsActions)
 	void Respawn();
+
+	// Go back to the main menu
+	UFUNCTION(BlueprintCallable, meta = (BlueprintProtected), Category = ZynapsActions)
+	void ExitToMenu();
 
 	// Retrieves the player's pawn
 	UFUNCTION(BlueprintPure, meta = (BlueprintProtected), Category = ZynapsState)
@@ -57,11 +90,16 @@ protected:
 	UFUNCTION(BlueprintPure, meta = (BlueprintProtected), Category = ZynapsState)
 	AZynapsCameraManager* GetZynapsCameraManager() const;
 
-
 private:
 
-	// Timer handle which manages the time before spawning the player after it was destroyed
+	// Timer handle which manages the time before the game starts regular playing
+	FTimerHandle PreparingTimerHandle;
+
+	// Timer handle which manages the time before spawning the player after it has been destroyed
 	FTimerHandle SpawnTimerHandle;
+
+	// Timer handle which manages the time before the game goes back to the main menu when the game is over
+	FTimerHandle GameOverTimerHandle;
 
 	// Player start objects in the stage
 	UPROPERTY()  // Needed to ensure garbage collection

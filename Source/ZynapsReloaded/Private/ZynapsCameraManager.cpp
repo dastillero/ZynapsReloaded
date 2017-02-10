@@ -36,3 +36,8 @@ void AZynapsCameraManager::UpdateCamera(float DeltaSeconds)
 	GetViewTarget()->AddActorWorldOffset(FVector(0.0f, CameraSpeed * DeltaSeconds, 0.0f));
 }
 
+// Sets the camera location
+void AZynapsCameraManager::SetCameraLocation(FVector Location)
+{
+	GetViewTarget()->SetActorLocation(Location);
+}

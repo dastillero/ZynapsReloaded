@@ -73,7 +73,7 @@ void AStageGameMode::BeginPlay()
 		return Location1.Y < Location2.Y;
 	});
 
-	// Sets the current start for the player
+	// Set the current start for the player
 	AZynapsController* ZynapsController = GetZynapsController();
 	if (!ZynapsController)
 	{
@@ -81,6 +81,15 @@ void AStageGameMode::BeginPlay()
 		return;
 	}
 	ZynapsController->StartSpot = StageInitPlayerStart;
+
+	// Set initial state
+	AZynapsGameState* ZynapsGameState = GetZynapsGameState();
+	if (!ZynapsGameState)
+	{
+		UE_LOG(LogStageGameMode, Error, TEXT("Failed to retrieve the stage state"));
+		return;
+	}
+	ZynapsGameState->SetCurrentState(EStageState::Preparing);
 }
 
 // Called every frame
@@ -113,32 +122,80 @@ void AStageGameMode::Tick(float DeltaSeconds)
 	}
 
 	// Evaluate the current player start
-	AZynapsCameraManager* CameraManager = GetZynapsCameraManager();
-	if (CameraManager)
+	APlayerStart* NewPlayerStart = EvaluatePlayerStartSpot();
+	if (!NewPlayerStart)
 	{
-		APlayerStart* NewPlayerStart = StageInitPlayerStart;
-		FVector CameraLocation = CameraManager->GetCameraLocation();
-		for (APlayerStart* PlayerStart : PlayerStarts)
-		{
-			FVector PlayerStartLocation = PlayerStart->GetActorLocation();
-			UE_LOG(LogStageGameMode, VeryVerbose, 
-				TEXT("Evaluating player start %s at %f against camera location at %f"),
-				*PlayerStart->GetName(), PlayerStartLocation.Y, CameraLocation.Y);
-			if (CameraLocation.Y > PlayerStartLocation.Y)
-			{
-				NewPlayerStart = PlayerStart;
-			}
-		}
-		UE_LOG(LogStageGameMode, VeryVerbose, TEXT("Current player start evaluated to %s"),
-			*NewPlayerStart->GetName());
+		UE_LOG(LogStageGameMode, Error, TEXT("The player start spot could not be evaluated"));
+		return;
+	}
+	if (Controller->StartSpot == nullptr || Controller->StartSpot != NewPlayerStart)
+	{
 		Controller->StartSpot = NewPlayerStart;
 	}
 
+	// Handle stage states
+	switch (ZynapsGameState->GetCurrentState())
+	{
+	case EStageState::Preparing:
+		HandlePreparingState(ZynapsGameState, PlayerState, Controller);
+		break;
+	case EStageState::Playing:
+		HandlePlayingState(ZynapsGameState, PlayerState, Controller);
+		break;
+	case EStageState::GameOver:
+		HandleGameOverState(ZynapsGameState, PlayerState, Controller);
+		break;
+	}
+}
+
+// Called from Tick() to evaluate the player start to be used when the player is respawned
+APlayerStart* AStageGameMode::EvaluatePlayerStartSpot()
+{
+	AZynapsCameraManager* CameraManager = GetZynapsCameraManager();
+	if (!CameraManager)
+	{
+		UE_LOG(LogStageGameMode, Error, TEXT("Failed to retrieve the camera manager"));
+		return nullptr;
+	}
+
+	APlayerStart* NewPlayerStart = StageInitPlayerStart;
+	FVector CameraLocation = CameraManager->GetCameraLocation();
+	for (APlayerStart* PlayerStart : PlayerStarts)
+	{
+		FVector PlayerStartLocation = PlayerStart->GetActorLocation();
+		UE_LOG(LogStageGameMode, VeryVerbose,
+			TEXT("Evaluating player start %s at %f against camera location at %f"),
+			*PlayerStart->GetName(), PlayerStartLocation.Y, CameraLocation.Y);
+		if (CameraLocation.Y > PlayerStartLocation.Y)
+		{
+			NewPlayerStart = PlayerStart;
+		}
+	}
+	UE_LOG(LogStageGameMode, VeryVerbose, TEXT("Current player start evaluated to %s"),
+		*NewPlayerStart->GetName());
+	return NewPlayerStart;
+}
+
+// Handles the Preparing state
+void AStageGameMode::HandlePreparingState(AZynapsGameState* ZynapsGameState, AZynapsPlayerState* ZynapsPlayerState,
+	AZynapsController* ZynapsController)
+{
+	// Start playing after a given time
+	if (!PreparingTimerHandle.IsValid() || !GetWorldTimerManager().IsTimerActive(PreparingTimerHandle))
+	{
+		GetWorldTimerManager().SetTimer(PreparingTimerHandle, this, &AStageGameMode::Play, PreparingDelay);
+	}
+}
+
+// Handles the Playing state
+void AStageGameMode::HandlePlayingState(AZynapsGameState* ZynapsGameState, AZynapsPlayerState* ZynapsPlayerState,
+	AZynapsController* ZynapsController)
+{
 	// Update the state of the stage based on the state of the player
-	if (PlayerState->GetCurrentState() == EPlayerState::Destroyed)
+	if (ZynapsPlayerState->GetCurrentState() == EPlayerState::Destroyed)
 	{
 		// The player has been destroyed
-		if (!PlayerCanRestart(Controller))
+		if (!PlayerCanRestart(ZynapsController))
 		{
 			// No more lives available
 			ZynapsGameState->SetCurrentState(EStageState::GameOver);
@@ -159,17 +216,35 @@ void AStageGameMode::Tick(float DeltaSeconds)
 	}
 }
 
-// Respawn the player pawn
-void AStageGameMode::Respawn()
+// Handles the GameOver state
+void AStageGameMode::HandleGameOverState(AZynapsGameState* ZynapsGameState, AZynapsPlayerState* ZynapsPlayerState,
+	AZynapsController* ZynapsController)
 {
-	// Get the player state
-	AZynapsPlayerState* ZynapsPlayerState = GetZynapsPlayerState();
-	if (!ZynapsPlayerState)
+	// Go back to the main menu after a given time
+	if (!GameOverTimerHandle.IsValid() || !GetWorldTimerManager().IsTimerActive(GameOverTimerHandle))
 	{
-		UE_LOG(LogStageGameMode, Error, TEXT("Failed to retrieve the player state. The player won't be respawned"));
+		GetWorldTimerManager().SetTimer(GameOverTimerHandle, this, &AStageGameMode::ExitToMenu, GameOverDelay);
+	}
+}
+
+// Sets the state state to Playing
+void AStageGameMode::Play()
+{
+	// Get the stage state
+	AZynapsGameState* ZynapsGameState = GetZynapsGameState();
+	if (!ZynapsGameState)
+	{
+		UE_LOG(LogStageGameMode, Error, TEXT("Failed to retrieve the game state"));
 		return;
 	}
 
+	// Set the stage state to Playing
+	ZynapsGameState->SetCurrentState(EStageState::Playing);
+}
+
+// Respawn the player pawn
+void AStageGameMode::Respawn()
+{
 	// Get the stage state
 	AZynapsGameState* ZynapsGameState = GetZynapsGameState();
 	if (!ZynapsGameState)
@@ -178,11 +253,45 @@ void AStageGameMode::Respawn()
 		return;
 	}
 
+	// Get the player controller
+	AZynapsController* ZynapsController = GetZynapsController();
+	if (!ZynapsController)
+	{
+		UE_LOG(LogStageGameMode, Error, TEXT("Failed to retrieve the player controller. The player won't be respawned"));
+		return;
+	}
+
+	// Get the camera manager
+	AZynapsCameraManager* ZynapsCameraManager = GetZynapsCameraManager();
+	if (!ZynapsCameraManager)
+	{
+		UE_LOG(LogStageGameMode, Error, TEXT("Failed to retrieve the camera manager. The player won't be respawned"));
+		return;
+	}
+
+	// Set the camera location back to the current player start
+	FVector CameraLocation = ZynapsCameraManager->GetCameraLocation();
+	APlayerStart* PlayerStart = Cast<APlayerStart>(ZynapsController->StartSpot.Get());
+	if (!PlayerStart)
+	{
+		PlayerStart = StageInitPlayerStart;
+	}
+	FVector PlayerStartLocation = PlayerStart->GetActorLocation();
+	CameraLocation.Y = PlayerStartLocation.Y;
+	ZynapsCameraManager->SetCameraLocation(CameraLocation);
+
 	// Respawn the player and set the stage state to Preparing
 	AZynapsController* Controller = GetZynapsController();
 	UE_LOG(LogStageGameMode, Verbose, TEXT("Respawning player at %s"), *Controller->StartSpot->GetName());
 	RestartPlayer(Controller);
 	ZynapsGameState->SetCurrentState(EStageState::Preparing);
+}
+
+// Go back to the main menu
+void AStageGameMode::ExitToMenu()
+{
+	// Go back to the menu
+	UGameplayStatics::OpenLevel(GetWorld(), TEXT("World'/Game/Levels/Menu.Menu'"));
 }
 
 // Returns the player's pawn
