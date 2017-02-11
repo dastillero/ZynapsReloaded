@@ -49,7 +49,6 @@ UCapsuleComponent* APlayerPawn::CreateCapsuleComponent(USceneComponent* Parent)
 {
 	UCapsuleComponent* Component = CreateDefaultSubobject<UCapsuleComponent>(TEXT("CapsuleComponent"));
 	Component->InitCapsuleSize(18.0f, 32.0f);
-	Component->SetWorldLocation(FVector(0.0f, 0.0f, 0.0f));
 	Component->SetWorldRotation(FRotator(0.0f, 180.0f, -90.0f));
 	Component->SetWorldScale3D(FVector(12.0f, 10.0f, 10.0f));
 	Component->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
@@ -64,9 +63,7 @@ UCapsuleComponent* APlayerPawn::CreateCapsuleComponent(USceneComponent* Parent)
 	Component->SetEnableGravity(false);
 	Component->SetAngularDamping(0.0f);
 	Component->SetLinearDamping(0.0f);
-	//Component->SetConstraintMode(EDOFMode::YZPlane);
 	Component->BodyInstance.bLockXRotation = true;
-	//Component->BodyInstance.bLockYRotation = true;
 	Component->BodyInstance.bLockZRotation = true;
 	Component->BodyInstance.bLockXTranslation = true;
 	//Component->SetHiddenInGame(false);
@@ -180,15 +177,39 @@ void APlayerPawn::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
-	// Apply the camera offset to the player
-	AZynapsWorldSettings* WorldSettings = AZynapsWorldSettings::GetZynapsWorldSettings(GetWorld());
-	if (WorldSettings)
+	// Get the game state
+	AZynapsGameState* ZynapsGameState = GetZynapsGameState();
+	if (!ZynapsGameState)
 	{
-		CapsuleComponent->AddWorldOffset(FVector(0.0f, WorldSettings->ScrollSpeed * DeltaSeconds, 0.0f));
+		UE_LOG(LogPlayerPawn, Error, TEXT("Failed to retrieve the game state"));
+		return;
+	}
+
+	// If the game is not in Preparing state, apply the scroll speed to the player
+	if (ZynapsGameState->GetCurrentState() != EStageState::Preparing)
+	{
+		AZynapsWorldSettings* WorldSettings = AZynapsWorldSettings::GetZynapsWorldSettings(GetWorld());
+		if (WorldSettings)
+		{
+			CapsuleComponent->AddWorldOffset(FVector(0.0f, WorldSettings->ScrollSpeed * DeltaSeconds, 0.0f));
+		}
+		else
+		{
+			UE_LOG(LogPlayerPawn, Warning, TEXT("Failed to retrieve the stage world settings"));
+		}
 	}
 	else
 	{
-		UE_LOG(LogPlayerPawn, Warning, TEXT("Failed to retrieve the stage world settings"));
+		// This is really a fix as the game mode spawn functions doesn't seem to work properly the
+		// first time a pawn is spawned at a player start. This code ensures that the pawn is
+		// located exactly at the player start
+		if (Controller)
+		{
+			if (Controller->StartSpot != nullptr)
+			{
+				CapsuleComponent->SetWorldLocation(Controller->StartSpot.Get()->GetActorLocation());
+			}
+		}
 	}
 }
 
@@ -201,6 +222,12 @@ AZynapsPlayerState* APlayerPawn::GetZynapsPlayerState() const
 		Result = Cast<AZynapsPlayerState>(PlayerState);
 	}
 	return Result;
+}
+
+// Returns the game state
+AZynapsGameState* APlayerPawn::GetZynapsGameState() const
+{
+	return GetWorld()->GetGameState<AZynapsGameState>();
 }
 
 // Called to move the player up

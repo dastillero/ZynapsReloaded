@@ -65,4 +65,8 @@ protected:
 	UFUNCTION(BlueprintPure, meta = (BlueprintProtected), Category = ZynapsState)
 	APlayerPawn* GetPlayerPawn() const;
 
+	// Returns the game state
+	UFUNCTION(BlueprintPure, meta = (BlueprintProtected), Category = ZynapsState)
+	AZynapsGameState* GetZynapsGameState() const;
+
 };

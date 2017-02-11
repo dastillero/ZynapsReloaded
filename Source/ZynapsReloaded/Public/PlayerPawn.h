@@ -4,6 +4,7 @@
 
 #include "GameFramework/Pawn.h"
 #include "ZynapsPlayerState.h"
+#include "ZynapsGameState.h"
 #include "PlayerProjectile.h"
 #include "Fly2DMovementComponent.h"
 #include "PlayerPawn.generated.h"
@@ -119,6 +120,10 @@ protected:
 	// Returns a reference to the instance of AZynapsPlayerState or NULL if it doesn't exist
 	UFUNCTION(BlueprintPure, meta = (BlueprintProtected), Category = ZynapsState)
 	AZynapsPlayerState* GetZynapsPlayerState() const;
+
+	// Returns the game state
+	UFUNCTION(BlueprintPure, meta = (BlueprintProtected), Category = ZynapsState)
+	AZynapsGameState* GetZynapsGameState() const;
 
 	// Returns the transform of a socket
 	UFUNCTION(BlueprintPure, meta = (BlueprintProtected), Category = ZynapsState)

@@ -55,6 +55,20 @@ void AZynapsController::SetupInputComponent()
 // Handles moving up
 void AZynapsController::MoveUp(float Val)
 {
+	// Get the game state
+	AZynapsGameState* ZynapsGameState = GetZynapsGameState();
+	if (!ZynapsGameState)
+	{
+		UE_LOG(LogZynapsController, Error, TEXT("Failed to retrieve the game state"));
+		return;
+	}
+
+	// If the game is in Preparing state don't move the pawn
+	if (ZynapsGameState->GetCurrentState() == EStageState::Preparing)
+	{
+		return;
+	}
+
 	APlayerPawn* PlayerPawn = GetPlayerPawn();
 	if (PlayerPawn != NULL && Val != 0.0f)
 	{
@@ -65,6 +79,20 @@ void AZynapsController::MoveUp(float Val)
 // Handles moving down
 void AZynapsController::MoveDown(float Val)
 {
+	// Get the game state
+	AZynapsGameState* ZynapsGameState = GetZynapsGameState();
+	if (!ZynapsGameState)
+	{
+		UE_LOG(LogZynapsController, Error, TEXT("Failed to retrieve the game state"));
+		return;
+	}
+
+	// If the game is in Preparing state don't move the pawn
+	if (ZynapsGameState->GetCurrentState() == EStageState::Preparing)
+	{
+		return;
+	}
+
 	APlayerPawn* PlayerPawn = GetPlayerPawn();
 	if (PlayerPawn != NULL && Val != 0.0f)
 	{
@@ -75,6 +103,20 @@ void AZynapsController::MoveDown(float Val)
 // Handles moving left
 void AZynapsController::MoveLeft(float Val)
 {
+	// Get the game state
+	AZynapsGameState* ZynapsGameState = GetZynapsGameState();
+	if (!ZynapsGameState)
+	{
+		UE_LOG(LogZynapsController, Error, TEXT("Failed to retrieve the game state"));
+		return;
+	}
+
+	// If the game is in Preparing state don't move the pawn
+	if (ZynapsGameState->GetCurrentState() == EStageState::Preparing)
+	{
+		return;
+	}
+
 	APlayerPawn* PlayerPawn = GetPlayerPawn();
 	if (PlayerPawn != NULL && Val != 0.0f)
 	{
@@ -85,6 +127,20 @@ void AZynapsController::MoveLeft(float Val)
 // Handles moving right
 void AZynapsController::MoveRight(float Val)
 {
+	// Get the game state
+	AZynapsGameState* ZynapsGameState = GetZynapsGameState();
+	if (!ZynapsGameState)
+	{
+		UE_LOG(LogZynapsController, Error, TEXT("Failed to retrieve the game state"));
+		return;
+	}
+
+	// If the game is in Preparing state don't move the pawn
+	if (ZynapsGameState->GetCurrentState() == EStageState::Preparing)
+	{
+		return;
+	}
+
 	APlayerPawn* PlayerPawn = GetPlayerPawn();
 	if (PlayerPawn != NULL && Val != 0.0f)
 	{
@@ -95,9 +151,18 @@ void AZynapsController::MoveRight(float Val)
 // Handles fire button pressed
 void AZynapsController::FirePressed()
 {
-	if (GEngine)
+	// Get the game state
+	AZynapsGameState* ZynapsGameState = GetZynapsGameState();
+	if (!ZynapsGameState)
 	{
-		//GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("AZynapsController::FirePressed"));
+		UE_LOG(LogZynapsController, Error, TEXT("Failed to retrieve the game state"));
+		return;
+	}
+
+	// If the game is in Preparing state don't fire
+	if (ZynapsGameState->GetCurrentState() == EStageState::Preparing)
+	{
+		return;
 	}
 
 	APlayerPawn* PlayerPawn = GetPlayerPawn();
@@ -110,9 +175,18 @@ void AZynapsController::FirePressed()
 // Handles fire button released
 void AZynapsController::FireReleased()
 {
-	if (GEngine)
+	// Get the game state
+	AZynapsGameState* ZynapsGameState = GetZynapsGameState();
+	if (!ZynapsGameState)
 	{
-		//GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("AZynapsController::FireReleased"));
+		UE_LOG(LogZynapsController, Error, TEXT("Failed to retrieve the game state"));
+		return;
+	}
+
+	// If the game is in Preparing state don't process anything
+	if (ZynapsGameState->GetCurrentState() == EStageState::Preparing)
+	{
+		return;
 	}
 }
 
@@ -129,3 +203,8 @@ APlayerPawn* AZynapsController::GetPlayerPawn() const
 	return Cast<APlayerPawn>(GetPawn());
 }
 
+// Returns the game state
+AZynapsGameState* AZynapsController::GetZynapsGameState() const
+{
+	return GetWorld()->GetGameState<AZynapsGameState>();
+}

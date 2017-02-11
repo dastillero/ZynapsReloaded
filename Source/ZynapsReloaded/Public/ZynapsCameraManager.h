@@ -3,6 +3,7 @@
 #pragma once
 
 #include "Camera/PlayerCameraManager.h"
+#include "ZynapsGameState.h"
 #include "ZynapsCameraManager.generated.h"
 
 // Log category
@@ -18,13 +19,20 @@ class ZYNAPSRELOADED_API AZynapsCameraManager : public APlayerCameraManager
 	
 public:
 
-	// Sets default values for the controller
-	AZynapsCameraManager();
-
 	// Performs per-tick camera update
 	virtual void UpdateCamera(float DeltaSeconds);
 
 	// Sets the camera location
 	UFUNCTION(BlueprintCallable, Category = Camera)
 	void SetCameraLocation(FVector Location);
+
+	// Sets the camera location taking into account the world fixed camera offset
+	UFUNCTION(BlueprintCallable, Category = Camera)
+	void SetCameraLocationWithOffset(FVector Location);
+
+protected:
+
+	// Returns the game state
+	UFUNCTION(BlueprintPure, meta = (BlueprintProtected), Category = Camera)
+	AZynapsGameState* GetZynapsGameState() const;
 };

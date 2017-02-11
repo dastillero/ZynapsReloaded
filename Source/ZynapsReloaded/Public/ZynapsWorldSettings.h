@@ -24,5 +24,9 @@ public:
 	// Scroll speed
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Stage)
 	float ScrollSpeed;
+
+	// Fixed camera offset which is added to the camera location
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Camera)
+	FVector FixedCameraOffset;
 	
 };

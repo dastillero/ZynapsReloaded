@@ -37,6 +37,12 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaSeconds) override;
 
+	// Tries to spawn the player's pawn, at the location returned by FindPlayerStart()
+	virtual void RestartPlayer(AController* Controller) override;
+
+	// Implementation which returns the StageInit player start
+	AActor* ChoosePlayerStart_Implementation(AController* Controller) override;
+
 protected:
 
 	// Called from Tick() to evaluate the player start to be used when the player is respawned

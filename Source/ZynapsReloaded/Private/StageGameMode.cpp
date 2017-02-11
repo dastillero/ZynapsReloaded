@@ -148,6 +148,56 @@ void AStageGameMode::Tick(float DeltaSeconds)
 	}
 }
 
+// Implementation which returns the StageInit player start
+AActor* AStageGameMode::ChoosePlayerStart_Implementation(AController* Controller)
+{
+	// Find all player start objects in the stage
+	for (TActorIterator<APlayerStart> It(GetWorld()); It; ++It)
+	{
+		APlayerStart* PlayerStart = *It;
+		if (PlayerStart->GetName() == "StageInit")
+		{
+			return PlayerStart;
+		}
+	}
+	return nullptr;
+}
+
+// Tries to spawn the player's pawn, at the location returned by FindPlayerStart()
+void AStageGameMode::RestartPlayer(AController* Controller)
+{
+	if (Controller == nullptr || Controller->IsPendingKillPending())
+	{
+		return;
+	}
+
+	if (Controller->StartSpot == nullptr)
+	{
+		for (TActorIterator<APlayerStart> It(GetWorld()); It; ++It)
+		{
+			APlayerStart* PlayerStart = *It;
+			if (PlayerStart->GetName() == "StageInit")
+			{
+				StageInitPlayerStart = PlayerStart;
+				break;
+			}
+		}
+
+		if (!StageInitPlayerStart)
+		{
+			UE_LOG(LogStageGameMode, Error, 
+				TEXT("The stage must have a player start named StageInit. The player won't be spawned"));
+			return;
+		}
+		Controller->StartSpot = StageInitPlayerStart;
+	}
+
+	AActor* StartSpot = Controller->StartSpot.Get();
+	UE_LOG(LogStageGameMode, Verbose, TEXT("Restarting at player start %s in %s"), *StartSpot->GetName(),
+		*StartSpot->GetActorLocation().ToString());
+	RestartPlayerAtPlayerStart(Controller, StartSpot);
+}
+
 // Called from Tick() to evaluate the player start to be used when the player is respawned
 APlayerStart* AStageGameMode::EvaluatePlayerStartSpot()
 {
@@ -208,11 +258,6 @@ void AStageGameMode::HandlePlayingState(AZynapsGameState* ZynapsGameState, AZyna
 				GetWorldTimerManager().SetTimer(SpawnTimerHandle, this, &AStageGameMode::Respawn, RespawnDelay);
 			}
 		}
-	}
-	else
-	{
-		// The player is playing
-		ZynapsGameState->SetCurrentState(EStageState::Playing);
 	}
 }
 
@@ -278,7 +323,7 @@ void AStageGameMode::Respawn()
 	}
 	FVector PlayerStartLocation = PlayerStart->GetActorLocation();
 	CameraLocation.Y = PlayerStartLocation.Y;
-	ZynapsCameraManager->SetCameraLocation(CameraLocation);
+	ZynapsCameraManager->SetCameraLocationWithOffset(CameraLocation);
 
 	// Respawn the player and set the stage state to Preparing
 	AZynapsController* Controller = GetZynapsController();
