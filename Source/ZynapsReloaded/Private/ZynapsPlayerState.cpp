@@ -18,6 +18,8 @@ AZynapsPlayerState::AZynapsPlayerState() : Super()
 	PlasmaBombs = false;
 	HomingMissiles = false;
 	SeekerMissiles = false;
+	PowerUpIndex = 0;
+	PowerUpActivationMode = false;
 }
 
 // Returns the set of replicated properties
@@ -78,4 +80,28 @@ void AZynapsPlayerState::ReduceLives()
 	PlasmaBombs = false;
 	HomingMissiles = false;
 	SeekerMissiles = false;
+}
+
+// Returns the index of the power-up to be activated
+uint8 AZynapsPlayerState::GetPowerUpIndex() const
+{
+	return PowerUpIndex;
+}
+
+// Called when a fuel capsule is collected
+void AZynapsPlayerState::FuelCapsuleCollected()
+{
+	if (!PowerUpActivationMode)
+	{
+		ShiftPowerUpIndex();
+	}
+}
+
+// Cycles through the power-up indexes
+void AZynapsPlayerState::ShiftPowerUpIndex()
+{
+	if (++PowerUpIndex > 4)
+	{
+		PowerUpIndex = 0;
+	}
 }

@@ -67,14 +67,32 @@ public:
 	UPROPERTY(Replicated, BlueprintReadWrite, Category = ZynapsState)
 	bool SeekerMissiles;
 
+	// Returns the index of the power-up to be activated
+	UFUNCTION(BlueprintPure, Category = ZynapsState)
+	uint8 GetPowerUpIndex() const;
+
+	// Called when a fuel capsule is collected
+	UFUNCTION(BlueprintCallable, Category = ZynapsState)
+	void FuelCapsuleCollected();
+
 protected:
 
 	// Reduces a live and resets the state
 	UFUNCTION(BlueprintCallable, meta = (BlueprintProtected), Category = ZynapsState)
 	void ReduceLives();
 
+	// Cycles through the power-up indexes
+	UFUNCTION(BlueprintCallable, meta = (BlueprintProtected), Category = ZynapsState)
+	void ShiftPowerUpIndex();
+
 private:
 
 	// The player's current state
 	EPlayerState CurrentState;
+
+	// Index of the power-up to be activated
+	uint8 PowerUpIndex;
+
+	// Flag which indicates that the player is in power-up activation mode
+	bool PowerUpActivationMode;
 };

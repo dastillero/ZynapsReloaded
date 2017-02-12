@@ -4,6 +4,7 @@
 #include "PlayerPawn.h"
 #include "ProjectionUtil.h"
 #include "ZynapsWorldSettings.h"
+#include "FuelCapsule.h"
 
 // Log category
 DEFINE_LOG_CATEGORY(LogPlayerPawn);
@@ -59,6 +60,7 @@ UCapsuleComponent* APlayerPawn::CreateCapsuleComponent(USceneComponent* Parent)
 	Component->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 	Component->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldStatic, ECollisionResponse::ECR_Block);
 	Component->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldDynamic, ECollisionResponse::ECR_Block);
+	Component->SetCollisionResponseToChannel(ECollisionChannel::ECC_PhysicsBody, ECollisionResponse::ECR_Overlap);
 	Component->SetSimulatePhysics(true);
 	Component->SetEnableGravity(false);
 	Component->SetAngularDamping(0.0f);
@@ -322,14 +324,27 @@ void APlayerPawn::BeginOverlap_Implementation(class UPrimitiveComponent* HitComp
 	class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep,
 	const FHitResult &SweepResult)
 {
-	// PRINT("APlayerPawn::BeginOverlap");
+	if (OtherActor->IsA(AFuelCapsule::StaticClass()))
+	{
+		// Overlapping a fuel capsule
+		AZynapsPlayerState* ZynapsPlayerState = GetZynapsPlayerState();
+		if (!ZynapsPlayerState)
+		{
+			UE_LOG(LogPlayerPawn, Warning, TEXT("Failed to retrieve the player state"));
+		}
+		else
+		{
+			ZynapsPlayerState->FuelCapsuleCollected();
+			PRINT("Power up: %d", ZynapsPlayerState->GetPowerUpIndex());
+		}
+		OtherActor->Destroy();
+	}
 }
 
 // Called when the player ends overlapping with another actor
 void APlayerPawn::EndOverlap_Implementation(class UPrimitiveComponent* HitComp, class AActor* OtherActor,
 	class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	// PRINT("APlayerPawn::EndOverlap");
 }
 
 // Returns the transform of a socket

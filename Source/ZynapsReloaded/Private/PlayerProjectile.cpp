@@ -24,9 +24,9 @@ void APlayerProjectile::BeginPlay()
 }
 
 // Called every frame
-void APlayerProjectile::Tick(float DeltaTime)
+void APlayerProjectile::Tick(float DeltaSeconds)
 {
-	Super::Tick(DeltaTime);
+	Super::Tick(DeltaSeconds);
 
 	// Destroy the projectile if it is not visible anymore
 	if (!IsVisibleOnScreen())
