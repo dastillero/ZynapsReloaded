@@ -163,41 +163,6 @@ AActor* AStageGameMode::ChoosePlayerStart_Implementation(AController* Controller
 	return nullptr;
 }
 
-// Tries to spawn the player's pawn, at the location returned by FindPlayerStart()
-void AStageGameMode::RestartPlayer(AController* Controller)
-{
-	if (Controller == nullptr || Controller->IsPendingKillPending())
-	{
-		return;
-	}
-
-	if (Controller->StartSpot == nullptr)
-	{
-		for (TActorIterator<APlayerStart> It(GetWorld()); It; ++It)
-		{
-			APlayerStart* PlayerStart = *It;
-			if (PlayerStart->GetName() == "StageInit")
-			{
-				StageInitPlayerStart = PlayerStart;
-				break;
-			}
-		}
-
-		if (!StageInitPlayerStart)
-		{
-			UE_LOG(LogStageGameMode, Error, 
-				TEXT("The stage must have a player start named StageInit. The player won't be spawned"));
-			return;
-		}
-		Controller->StartSpot = StageInitPlayerStart;
-	}
-
-	AActor* StartSpot = Controller->StartSpot.Get();
-	UE_LOG(LogStageGameMode, Verbose, TEXT("Restarting at player start %s in %s"), *StartSpot->GetName(),
-		*StartSpot->GetActorLocation().ToString());
-	RestartPlayerAtPlayerStart(Controller, StartSpot);
-}
-
 // Called from Tick() to evaluate the player start to be used when the player is respawned
 APlayerStart* AStageGameMode::EvaluatePlayerStartSpot()
 {
