@@ -52,6 +52,14 @@ public:
 	UFUNCTION(BlueprintCallable, Category = ZynapsState)
 	void SetCurrentState(EPlayerState State);
 
+	// Returns the power-up activation mode
+	UFUNCTION(BlueprintPure, Category = ZynapsState)
+	bool GetPowerUpActivationMode() const;
+
+	// Sets the power-up activation mode
+	UFUNCTION(BlueprintCallable, Category = ZynapsState)
+	void SetPowerUpActivationMode(bool NewPowerUpActivationMode);
+
 	// Score
 	UPROPERTY(Replicated, BlueprintReadWrite, Category = ZynapsState)
 	int32 GameScore;
@@ -97,6 +105,10 @@ protected:
 	// Cycles through the power-ups
 	UFUNCTION(BlueprintCallable, meta = (BlueprintProtected), Category = ZynapsState)
 	void ShiftSelectedPowerUp();
+
+	// Activates the selected power-up
+	UFUNCTION(BlueprintCallable, meta = (BlueprintProtected), Category = ZynapsState)
+	void ActivateSelectedPowerUp();
 
 private:
 

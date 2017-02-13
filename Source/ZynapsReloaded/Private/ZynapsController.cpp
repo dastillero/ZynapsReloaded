@@ -10,14 +10,62 @@ DEFINE_LOG_CATEGORY(LogZynapsController);
 // Sets default values for the controller
 AZynapsController::AZynapsController(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
+	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	PrimaryActorTick.bCanEverTick = true;
+
 	// Set the player camera manager
 	PlayerCameraManagerClass = AZynapsCameraManager::StaticClass();
+
+	// Reset the time in which the fire button was pressed
+	FirePressedTime = -1.0;
 }
 
 // Called when the game starts
 void AZynapsController::BeginPlay()
 {
 	Super::BeginPlay();
+}
+
+// Called every frame
+void AZynapsController::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+
+	// Get the zynaps game state
+	AZynapsGameState* ZynapsGameState = GetZynapsGameState();
+	if (!ZynapsGameState)
+	{
+		UE_LOG(LogZynapsController, Error, TEXT("Failed to retrieve the game state"));
+		return;
+	}
+
+	// If the game is in Preparing state don't process anything else
+	if (ZynapsGameState->GetCurrentState() == EStageState::Preparing)
+	{
+		return;
+	}
+
+	// Get the player state
+	AZynapsPlayerState* ZynapsPlayerState = GetZynapsPlayerState();
+	if (!ZynapsPlayerState)
+	{
+		UE_LOG(LogZynapsController, Error, TEXT("Failed to retrieve the player state"));
+		return;
+	}
+
+	// Set the power-up activation mode on if necessary
+	if (FirePressedTime > 0)
+	{
+		double FireHoldingTime = FPlatformTime::Seconds() - FirePressedTime;
+		if (FireHoldingTime > PowerUpActivationModeTime)
+		{
+			// The power-up activation mode is on
+			if (!ZynapsPlayerState->GetPowerUpActivationMode())
+			{
+				ZynapsPlayerState->SetPowerUpActivationMode(true);
+			}
+		}
+	}
 }
 
 // Returns true if the player has more lives available. false otherwise.
@@ -69,6 +117,7 @@ void AZynapsController::MoveUp(float Val)
 		return;
 	}
 
+	// Move the pawn up
 	APlayerPawn* PlayerPawn = GetPlayerPawn();
 	if (PlayerPawn != NULL && Val != 0.0f)
 	{
@@ -93,6 +142,7 @@ void AZynapsController::MoveDown(float Val)
 		return;
 	}
 
+	// Move the pawn down
 	APlayerPawn* PlayerPawn = GetPlayerPawn();
 	if (PlayerPawn != NULL && Val != 0.0f)
 	{
@@ -117,6 +167,7 @@ void AZynapsController::MoveLeft(float Val)
 		return;
 	}
 
+	// Move the pawn left
 	APlayerPawn* PlayerPawn = GetPlayerPawn();
 	if (PlayerPawn != NULL && Val != 0.0f)
 	{
@@ -141,6 +192,7 @@ void AZynapsController::MoveRight(float Val)
 		return;
 	}
 
+	// Move the pawn right
 	APlayerPawn* PlayerPawn = GetPlayerPawn();
 	if (PlayerPawn != NULL && Val != 0.0f)
 	{
@@ -165,6 +217,10 @@ void AZynapsController::FirePressed()
 		return;
 	}
 
+	// Take the time in which the button was pressed
+	FirePressedTime = FPlatformTime::Seconds();
+
+	// Ask the pawn to fire
 	APlayerPawn* PlayerPawn = GetPlayerPawn();
 	if (PlayerPawn)
 	{
@@ -188,6 +244,19 @@ void AZynapsController::FireReleased()
 	{
 		return;
 	}
+
+	// Reset the time in which the fire button was pressed and set the power-up activation mode off
+	FirePressedTime = -1.0;
+	AZynapsPlayerState* ZynapsPlayerState = GetZynapsPlayerState();
+	if (!ZynapsPlayerState)
+	{
+		UE_LOG(LogZynapsController, Error, TEXT("Failed to retrieve the player state"));
+		return;
+	}
+	if (ZynapsPlayerState->GetPowerUpActivationMode())
+	{
+		ZynapsPlayerState->SetPowerUpActivationMode(false);
+	}
 }
 
 // Handles back button pressed
@@ -207,4 +276,14 @@ APlayerPawn* AZynapsController::GetPlayerPawn() const
 AZynapsGameState* AZynapsController::GetZynapsGameState() const
 {
 	return GetWorld()->GetGameState<AZynapsGameState>();
+}
+
+// Returns the player state
+AZynapsPlayerState* AZynapsController::GetZynapsPlayerState() const
+{
+	if (PlayerState)
+	{
+		return Cast<AZynapsPlayerState>(PlayerState);
+	}
+	return nullptr;
 }

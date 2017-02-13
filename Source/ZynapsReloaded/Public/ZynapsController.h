@@ -9,6 +9,9 @@
 // Log category
 DECLARE_LOG_CATEGORY_EXTERN(LogZynapsController, Log, All);
 
+// Time to activate the power-up activation mode
+const double PowerUpActivationModeTime = 0.5;  // One second
+
 /**
  * The default Player Controller used by StageGameMode.
  */
@@ -25,8 +28,11 @@ public:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
+	// Called every frame
+	virtual void Tick(float DeltaSeconds) override;
+
 	// Returns true if the player has more lives available. false otherwise.
-	virtual bool CanRestartPlayer();
+	virtual bool CanRestartPlayer() override;
 	
 protected:
 
@@ -69,4 +75,12 @@ protected:
 	UFUNCTION(BlueprintPure, meta = (BlueprintProtected), Category = ZynapsState)
 	AZynapsGameState* GetZynapsGameState() const;
 
+	// Returns the player state
+	UFUNCTION(BlueprintPure, meta = (BlueprintProtected), Category = ZynapsState)
+	AZynapsPlayerState* GetZynapsPlayerState() const;
+
+private:
+
+	// Time in which the fire button was pressed
+	double FirePressedTime;
 };

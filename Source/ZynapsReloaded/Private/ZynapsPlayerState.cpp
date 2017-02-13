@@ -71,6 +71,18 @@ void AZynapsPlayerState::SetCurrentState(EPlayerState State)
 	}
 }
 
+// Returns the power-up activation mode
+bool AZynapsPlayerState::GetPowerUpActivationMode() const
+{
+	return PowerUpActivationMode;
+}
+
+// Sets the power-up activation mode
+void AZynapsPlayerState::SetPowerUpActivationMode(bool NewPowerUpActivationMode)
+{
+	PowerUpActivationMode = NewPowerUpActivationMode;
+}
+
 // Reduces a live and resets the state
 void AZynapsPlayerState::ReduceLives()
 {
@@ -93,7 +105,11 @@ EPowerUp AZynapsPlayerState::GetSelectedPowerUp() const
 // Called when a fuel capsule is collected
 void AZynapsPlayerState::FuelCapsuleCollected()
 {
-	if (!PowerUpActivationMode)
+	if (PowerUpActivationMode)
+	{
+		ActivateSelectedPowerUp();
+	}
+	else
 	{
 		ShiftSelectedPowerUp();
 	}
@@ -111,4 +127,11 @@ void AZynapsPlayerState::ShiftSelectedPowerUp()
 	{
 		PowerUp = (EPowerUp)PowerUpIndex;
 	}
+}
+
+// Activates the selected power-up
+void AZynapsPlayerState::ActivateSelectedPowerUp()
+{
+	// Reset the power-up selection
+	PowerUp = EPowerUp::SpeedUp;
 }
