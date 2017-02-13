@@ -107,4 +107,8 @@ void AZynapsPlayerState::ShiftSelectedPowerUp()
 	{
 		PowerUp = EPowerUp::SpeedUp;
 	}
+	else
+	{
+		PowerUp = (EPowerUp)PowerUpIndex;
+	}
 }
