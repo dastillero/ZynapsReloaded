@@ -110,6 +110,14 @@ protected:
 	UFUNCTION(BlueprintCallable, meta = (BlueprintProtected), Category = ZynapsState)
 	void ActivateSelectedPowerUp();
 
+	// Increases the speed-up level
+	UFUNCTION(BlueprintCallable, meta = (BlueprintProtected), Category = ZynapsState)
+	void IncreaseSpeedUpLevel();
+
+	// Increases the laser power
+	UFUNCTION(BlueprintCallable, meta = (BlueprintProtected), Category = ZynapsState)
+	void IncreaseLaserPower();
+
 private:
 
 	// The player's current state

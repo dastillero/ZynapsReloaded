@@ -132,6 +132,44 @@ void AZynapsPlayerState::ShiftSelectedPowerUp()
 // Activates the selected power-up
 void AZynapsPlayerState::ActivateSelectedPowerUp()
 {
+	// Activate the selected power-up
+	switch (PowerUp)
+	{
+	case EPowerUp::SpeedUp:
+		IncreaseSpeedUpLevel();
+		break;
+	case EPowerUp::LaserPower:
+		IncreaseLaserPower();
+		break;
+	case EPowerUp::PlasmaBombs:
+		PlasmaBombs = true;
+		break;
+	case EPowerUp::HomingMissiles:
+		HomingMissiles = true;
+		break;
+	case EPowerUp::SeekerMissiles:
+		SeekerMissiles = true;
+		break;
+	}
+
 	// Reset the power-up selection
 	PowerUp = EPowerUp::SpeedUp;
+}
+
+// Increases the speed-up level
+void AZynapsPlayerState::IncreaseSpeedUpLevel()
+{
+	if (++SpeedUpLevel > 4)
+	{
+		SpeedUpLevel = 4;
+	}
+}
+
+// Increases the laser power
+void AZynapsPlayerState::IncreaseLaserPower()
+{
+	if (++LaserPower > 4)
+	{
+		LaserPower = 4;
+	}
 }
