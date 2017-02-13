@@ -18,7 +18,7 @@ AZynapsPlayerState::AZynapsPlayerState() : Super()
 	PlasmaBombs = false;
 	HomingMissiles = false;
 	SeekerMissiles = false;
-	PowerUpIndex = 0;
+	PowerUp = EPowerUp::SpeedUp;
 	PowerUpActivationMode = false;
 }
 
@@ -80,12 +80,14 @@ void AZynapsPlayerState::ReduceLives()
 	PlasmaBombs = false;
 	HomingMissiles = false;
 	SeekerMissiles = false;
+	PowerUp = EPowerUp::SpeedUp;
+	PowerUpActivationMode = false;
 }
 
-// Returns the index of the power-up to be activated
-uint8 AZynapsPlayerState::GetPowerUpIndex() const
+// Returns the selected of the power-up
+EPowerUp AZynapsPlayerState::GetSelectedPowerUp() const
 {
-	return PowerUpIndex;
+	return PowerUp;
 }
 
 // Called when a fuel capsule is collected
@@ -93,15 +95,16 @@ void AZynapsPlayerState::FuelCapsuleCollected()
 {
 	if (!PowerUpActivationMode)
 	{
-		ShiftPowerUpIndex();
+		ShiftSelectedPowerUp();
 	}
 }
 
-// Cycles through the power-up indexes
-void AZynapsPlayerState::ShiftPowerUpIndex()
+// Cycles through the power-ups
+void AZynapsPlayerState::ShiftSelectedPowerUp()
 {
-	if (++PowerUpIndex > 4)
+	uint8 PowerUpIndex = (uint8)PowerUp;
+	if (++PowerUpIndex > (uint8)EPowerUp::SeekerMissiles)
 	{
-		PowerUpIndex = 0;
+		PowerUp = EPowerUp::SpeedUp;
 	}
 }

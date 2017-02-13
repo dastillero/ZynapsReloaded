@@ -335,7 +335,6 @@ void APlayerPawn::BeginOverlap_Implementation(class UPrimitiveComponent* HitComp
 		else
 		{
 			ZynapsPlayerState->FuelCapsuleCollected();
-			PRINT("Power up: %d", ZynapsPlayerState->GetPowerUpIndex());
 		}
 		OtherActor->Destroy();
 	}
