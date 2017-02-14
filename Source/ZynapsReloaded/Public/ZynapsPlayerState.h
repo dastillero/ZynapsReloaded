@@ -8,6 +8,9 @@
 // Log category
 DECLARE_LOG_CATEGORY_EXTERN(LogZynapsPlayerState, Log, All);
 
+// Number of initial lives
+const uint8 InitialLives = 3;
+
 /**
  * Enumeration storing the indexes of the power-ups.
  */
@@ -60,17 +63,52 @@ public:
 	UFUNCTION(BlueprintCallable, Category = ZynapsState)
 	void SetPowerUpActivationMode(bool NewPowerUpActivationMode);
 
-	// Score
-	UPROPERTY(Replicated, BlueprintReadWrite, Category = ZynapsState)
-	int32 GameScore;
+	// Returns the selected power-up
+	UFUNCTION(BlueprintPure, Category = ZynapsState)
+	EPowerUp GetSelectedPowerUp() const;
 
-	// Remaining lives
-	UPROPERTY(Replicated, BlueprintReadWrite, Category = ZynapsState)
-	uint8 Lives;
+	// Called when a fuel capsule is collected
+	UFUNCTION(BlueprintCallable, Category = ZynapsState)
+	void FuelCapsuleCollected();
 
-	// Speed up level (0 - 4)
-	UPROPERTY(Replicated, BlueprintReadWrite, Category = ZynapsState)
-	uint8 SpeedUpLevel;
+	// Returns the game score
+	UFUNCTION(BlueprintPure, Category = ZynapsState)
+	int32 GetGameScore() const;
+
+	// Increases the game score
+	UFUNCTION(BlueprintCallable, Category = ZynapsState)
+	void IncreaseGameScore(int32 Points);
+
+	// Resets the game score
+	UFUNCTION(BlueprintCallable, Category = ZynapsState)
+	void ResetGameScore();
+
+	// Returns the number of lives available
+	UFUNCTION(BlueprintPure, Category = ZynapsState)
+	uint8 GetLives() const;
+
+	// Increases a live
+	UFUNCTION(BlueprintCallable, Category = ZynapsState)
+	void IncreaseLives();
+
+	// Resets the number of lives
+	void ResetLives();
+
+	// Reduces a live and resets the power-up states
+	UFUNCTION(BlueprintCallable, Category = ZynapsState)
+	void ReduceLives();
+
+	// Returns the speed-up level
+	UFUNCTION(BlueprintPure, Category = ZynapsState)
+	uint8 GetSpeedUpLevel() const;
+
+	// Increases the speed-up level
+	UFUNCTION(BlueprintCallable, Category = ZynapsState)
+	void IncreaseSpeedUpLevel();
+
+	// Resets the speed-up level
+	UFUNCTION(BlueprintCallable, Category = ZynapsState)
+	void ResetSpeedUpLevel();
 
 	// Laser power (0 - 4)
 	UPROPERTY(Replicated, BlueprintReadWrite, Category = ZynapsState)
@@ -88,23 +126,7 @@ public:
 	UPROPERTY(Replicated, BlueprintReadWrite, Category = ZynapsState)
 	bool SeekerMissiles;
 
-	// Returns the selected power-up
-	UFUNCTION(BlueprintPure, Category = ZynapsState)
-	EPowerUp GetSelectedPowerUp() const;
-
-	// Called when a fuel capsule is collected
-	UFUNCTION(BlueprintCallable, Category = ZynapsState)
-	void FuelCapsuleCollected();
-
-	// Returns the speed-up level
-	UFUNCTION(BlueprintPure, Category = ZynapsState)
-	uint8 GetSpeedUpLevel() const;
-
 protected:
-
-	// Reduces a live and resets the state
-	UFUNCTION(BlueprintCallable, meta = (BlueprintProtected), Category = ZynapsState)
-	void ReduceLives();
 
 	// Cycles through the power-ups
 	UFUNCTION(BlueprintCallable, meta = (BlueprintProtected), Category = ZynapsState)
@@ -113,10 +135,6 @@ protected:
 	// Activates the selected power-up
 	UFUNCTION(BlueprintCallable, meta = (BlueprintProtected), Category = ZynapsState)
 	void ActivateSelectedPowerUp();
-
-	// Increases the speed-up level
-	UFUNCTION(BlueprintCallable, meta = (BlueprintProtected), Category = ZynapsState)
-	void IncreaseSpeedUpLevel();
 
 	// Increases the laser power
 	UFUNCTION(BlueprintCallable, meta = (BlueprintProtected), Category = ZynapsState)
@@ -132,4 +150,13 @@ private:
 
 	// Flag which indicates that the player is in power-up activation mode
 	bool PowerUpActivationMode;
+
+	// Score
+	int32 GameScore;
+
+	// Remaining lives
+	uint8 Lives;
+
+	// Speed up level (0 - 4)
+	uint8 SpeedUpLevel;
 };

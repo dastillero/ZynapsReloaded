@@ -11,9 +11,9 @@ DEFINE_LOG_CATEGORY(LogZynapsPlayerState);
 AZynapsPlayerState::AZynapsPlayerState() : Super()
 {
 	SetCurrentState(EPlayerState::Playing);
-	GameScore = 0;
-	Lives = 3;
-	SpeedUpLevel = 0;
+	ResetGameScore();
+	ResetLives();
+	ResetSpeedUpLevel();
 	LaserPower = 0;
 	PlasmaBombs = false;
 	HomingMissiles = false;
@@ -28,11 +28,7 @@ void AZynapsPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& O
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(AZynapsPlayerState, CurrentState);
-	DOREPLIFETIME(AZynapsPlayerState, GameScore);
-	DOREPLIFETIME(AZynapsPlayerState, Lives);
-	DOREPLIFETIME(AZynapsPlayerState, SpeedUpLevel);
 	DOREPLIFETIME(AZynapsPlayerState, LaserPower);
-	DOREPLIFETIME(AZynapsPlayerState, GameScore);
 	DOREPLIFETIME(AZynapsPlayerState, PlasmaBombs);
 	DOREPLIFETIME(AZynapsPlayerState, HomingMissiles);
 	DOREPLIFETIME(AZynapsPlayerState, SeekerMissiles);
@@ -83,19 +79,6 @@ void AZynapsPlayerState::SetPowerUpActivationMode(bool NewPowerUpActivationMode)
 	PowerUpActivationMode = NewPowerUpActivationMode;
 }
 
-// Reduces a live and resets the state
-void AZynapsPlayerState::ReduceLives()
-{
-	Lives--;
-	SpeedUpLevel = 0;
-	LaserPower = 0;
-	PlasmaBombs = false;
-	HomingMissiles = false;
-	SeekerMissiles = false;
-	PowerUp = EPowerUp::SpeedUp;
-	PowerUpActivationMode = false;
-}
-
 // Returns the selected of the power-up
 EPowerUp AZynapsPlayerState::GetSelectedPowerUp() const
 {
@@ -115,10 +98,74 @@ void AZynapsPlayerState::FuelCapsuleCollected()
 	}
 }
 
+// Returns the game score
+int32 AZynapsPlayerState::GetGameScore() const
+{
+	return GameScore;
+}
+
+// Increases the game score
+void AZynapsPlayerState::IncreaseGameScore(int32 Points)
+{
+	GameScore += Points;
+}
+
+// Resets the game score
+void AZynapsPlayerState::ResetGameScore()
+{
+	GameScore = 0;
+}
+
+// Returns the number of lives available
+uint8 AZynapsPlayerState::GetLives() const
+{
+	return Lives;
+}
+
+// Increases a live
+void AZynapsPlayerState::IncreaseLives()
+{
+	Lives++;
+}
+
+// Reduces a live and resets the power-up states
+void AZynapsPlayerState::ReduceLives()
+{
+	Lives--;
+	ResetSpeedUpLevel();
+	LaserPower = 0;
+	PlasmaBombs = false;
+	HomingMissiles = false;
+	SeekerMissiles = false;
+	PowerUp = EPowerUp::SpeedUp;
+	PowerUpActivationMode = false;
+}
+
+// Resets the number of lives
+void AZynapsPlayerState::ResetLives()
+{
+	Lives = InitialLives;
+}
+
 // Returns the speed-up level
 uint8 AZynapsPlayerState::GetSpeedUpLevel() const
 {
 	return SpeedUpLevel;
+}
+
+// Increases the speed-up level
+void AZynapsPlayerState::IncreaseSpeedUpLevel()
+{
+	if (++SpeedUpLevel > 4)
+	{
+		SpeedUpLevel = 4;
+	}
+}
+
+// Resets the speed-up level
+void AZynapsPlayerState::ResetSpeedUpLevel()
+{
+	SpeedUpLevel = 0;
 }
 
 // Cycles through the power-ups
@@ -160,15 +207,6 @@ void AZynapsPlayerState::ActivateSelectedPowerUp()
 
 	// Reset the power-up selection
 	PowerUp = EPowerUp::SpeedUp;
-}
-
-// Increases the speed-up level
-void AZynapsPlayerState::IncreaseSpeedUpLevel()
-{
-	if (++SpeedUpLevel > 4)
-	{
-		SpeedUpLevel = 4;
-	}
 }
 
 // Increases the laser power

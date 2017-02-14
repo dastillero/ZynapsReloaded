@@ -77,7 +77,7 @@ bool AZynapsController::CanRestartPlayer()
 	}
 
 	AZynapsPlayerState* ZynapsPlayerState = Cast<AZynapsPlayerState>(PlayerState);
-	if (ZynapsPlayerState->Lives > 0)
+	if (ZynapsPlayerState->GetLives() > 0)
 	{
 		return true;
 	}
