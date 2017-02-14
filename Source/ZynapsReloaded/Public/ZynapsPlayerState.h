@@ -68,11 +68,11 @@ public:
 	UPROPERTY(Replicated, BlueprintReadWrite, Category = ZynapsState)
 	uint8 Lives;
 
-	// Speed up level (0 - 3)
+	// Speed up level (0 - 4)
 	UPROPERTY(Replicated, BlueprintReadWrite, Category = ZynapsState)
 	uint8 SpeedUpLevel;
 
-	// Laser power (0 - 3)
+	// Laser power (0 - 4)
 	UPROPERTY(Replicated, BlueprintReadWrite, Category = ZynapsState)
 	uint8 LaserPower;
 
@@ -95,6 +95,10 @@ public:
 	// Called when a fuel capsule is collected
 	UFUNCTION(BlueprintCallable, Category = ZynapsState)
 	void FuelCapsuleCollected();
+
+	// Returns the speed-up level
+	UFUNCTION(BlueprintPure, Category = ZynapsState)
+	uint8 GetSpeedUpLevel() const;
 
 protected:
 

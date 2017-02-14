@@ -3,16 +3,20 @@
 #pragma once
 
 #include "Components/ActorComponent.h"
+#include "ZynapsPlayerState.h"
 #include "Fly2DMovementComponent.generated.h"
 
 // Log category
 DECLARE_LOG_CATEGORY_EXTERN(LogFly2DMovementComponent, Log, All);
 
-// This constants applied to avoid artifacts when the player is near the screen bounds
+// This constants are applied to avoid artifacts when the player is near the screen bounds
 const float LimitMarginUp = 50.0f;
 const float LimitMarginDown = 50.0f;
 const float LimitMarginLeft = 50.0f;
 const float LimitMarginRight = 50.0f;
+
+// Percentage that the speed and acceleration will be incremented for each speed-up level
+const float SpeedUpLevelIncrement = 0.15f;  // 15%
 
 /**
  * Component to manage the movement of a flying machine in a 2.5D game.
@@ -65,10 +69,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Movement)
 	float InitialAcceleration;
 
-	// The actor's speed and acceleration increase (0 - 3)
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Movement)
-	uint8 SpeedUpLevel;
-
 	// Maximum rotation when moving up or down
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Rotation)
 	float MaxRotation;
@@ -92,6 +92,9 @@ private:
 	// Returns the owner component to update. If an updated component was not set, returns the root component
 	// of the owner.
 	USceneComponent* GetSafeUpdatedComponent() const;
+
+	// Returns the player state
+	AZynapsPlayerState* GetZynapsPlayerState() const;
 
 	// Flag to indicate that the actor should move up
 	bool bMoveUp;

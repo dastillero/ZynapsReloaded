@@ -23,7 +23,6 @@ UFly2DMovementComponent::UFly2DMovementComponent() : Super()
 	// Init movement vars
 	InitialMovementSpeed = 60.0f;
 	InitialAcceleration = 150.0f;
-	SpeedUpLevel = 0;
 	CurrentSpeed = FVector2D(0.0f, 0.0f);
 
 	// Init rotation vars
@@ -60,12 +59,23 @@ void UFly2DMovementComponent::ApplyActorMovement(float DeltaSeconds)
 		return;
 	}
 
+	// Get the player state
+	AZynapsPlayerState* ZynapsPlayerState = GetZynapsPlayerState();
+	if (!ZynapsPlayerState)
+	{
+		UE_LOG(LogFly2DMovementComponent, Error, TEXT("Failed to retrieve the player state"));
+		return;
+	}
+
 	// Get the component to update
 	USceneComponent* ComponentToUpdate = GetSafeUpdatedComponent();
 
 	// Get the values needed to calculate the actor's movement
-	float MaxMovementSpeed = InitialMovementSpeed + ((float)SpeedUpLevel) / 10.0f;
-	float MaxAcceleration = InitialAcceleration + ((float)SpeedUpLevel) / 10.0f;
+	float SpeedUpLevel = (float)ZynapsPlayerState->GetSpeedUpLevel();
+	float MaxMovementSpeed = InitialMovementSpeed +
+		InitialMovementSpeed * (SpeedUpLevelIncrement * SpeedUpLevel);
+	float MaxAcceleration = InitialAcceleration + 
+		InitialAcceleration * (SpeedUpLevelIncrement * SpeedUpLevel);
 
 	// Init rotation
 	float RotationToApply = 0.0f;
@@ -278,4 +288,20 @@ USceneComponent* UFly2DMovementComponent::GetSafeUpdatedComponent() const
 		Result = GetOwner()->GetRootComponent();
 	}
 	return Result;
+}
+
+// Returns the player state
+AZynapsPlayerState* UFly2DMovementComponent::GetZynapsPlayerState() const
+{
+	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
+	if (!PlayerController)
+	{
+		return nullptr;
+	}
+
+	if (!PlayerController->PlayerState)
+	{
+		return nullptr;
+	}
+	return Cast<AZynapsPlayerState>(PlayerController->PlayerState);
 }

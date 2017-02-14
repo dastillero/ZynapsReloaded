@@ -115,6 +115,12 @@ void AZynapsPlayerState::FuelCapsuleCollected()
 	}
 }
 
+// Returns the speed-up level
+uint8 AZynapsPlayerState::GetSpeedUpLevel() const
+{
+	return SpeedUpLevel;
+}
+
 // Cycles through the power-ups
 void AZynapsPlayerState::ShiftSelectedPowerUp()
 {
