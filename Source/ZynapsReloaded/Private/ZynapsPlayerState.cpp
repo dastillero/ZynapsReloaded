@@ -14,24 +14,12 @@ AZynapsPlayerState::AZynapsPlayerState() : Super()
 	ResetGameScore();
 	ResetLives();
 	ResetSpeedUpLevel();
-	LaserPower = 0;
-	PlasmaBombs = false;
-	HomingMissiles = false;
-	SeekerMissiles = false;
+	ResetLaserPower();
+	SetPlasmaBombs(false);
+	SetHomingMissiles(false);
+	SetSeekerMissiles(false);
 	PowerUp = EPowerUp::SpeedUp;
 	PowerUpActivationMode = false;
-}
-
-// Returns the set of replicated properties
-void AZynapsPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
-{
-	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-
-	DOREPLIFETIME(AZynapsPlayerState, CurrentState);
-	DOREPLIFETIME(AZynapsPlayerState, LaserPower);
-	DOREPLIFETIME(AZynapsPlayerState, PlasmaBombs);
-	DOREPLIFETIME(AZynapsPlayerState, HomingMissiles);
-	DOREPLIFETIME(AZynapsPlayerState, SeekerMissiles);
 }
 
 // Returns the current player state
@@ -56,7 +44,7 @@ void AZynapsPlayerState::SetCurrentState(EPlayerState State)
 		case EPlayerState::Destroyed:
 			UE_LOG(LogZynapsPlayerState, Verbose, TEXT("Setting new player state: Destroyed"));
 			CurrentState = State;
-			ReduceLives();
+			DecreaseLives();
 			break;
 		default:
 			// Do nothing here
@@ -83,6 +71,47 @@ void AZynapsPlayerState::SetPowerUpActivationMode(bool NewPowerUpActivationMode)
 EPowerUp AZynapsPlayerState::GetSelectedPowerUp() const
 {
 	return PowerUp;
+}
+
+// Cycles through the power-ups
+void AZynapsPlayerState::ShiftSelectedPowerUp()
+{
+	uint8 PowerUpIndex = (uint8)PowerUp;
+	if (++PowerUpIndex > (uint8)EPowerUp::SeekerMissiles)
+	{
+		PowerUp = EPowerUp::SpeedUp;
+	}
+	else
+	{
+		PowerUp = (EPowerUp)PowerUpIndex;
+	}
+}
+
+// Activates the selected power-up
+void AZynapsPlayerState::ActivateSelectedPowerUp()
+{
+	// Activate the selected power-up
+	switch (PowerUp)
+	{
+	case EPowerUp::SpeedUp:
+		IncreaseSpeedUpLevel();
+		break;
+	case EPowerUp::LaserPower:
+		IncreaseLaserPower();
+		break;
+	case EPowerUp::PlasmaBombs:
+		SetPlasmaBombs(true);
+		break;
+	case EPowerUp::HomingMissiles:
+		SetHomingMissiles(true);
+		break;
+	case EPowerUp::SeekerMissiles:
+		SetSeekerMissiles(true);
+		break;
+	}
+
+	// Reset the power-up selection
+	PowerUp = EPowerUp::SpeedUp;
 }
 
 // Called when a fuel capsule is collected
@@ -129,14 +158,21 @@ void AZynapsPlayerState::IncreaseLives()
 }
 
 // Reduces a live and resets the power-up states
-void AZynapsPlayerState::ReduceLives()
+void AZynapsPlayerState::DecreaseLives()
 {
+	// Reduce the number of lives
 	Lives--;
+	if (Lives < 0)
+	{
+		Lives = 0;
+	}
+
+	// Reset the power-up states
 	ResetSpeedUpLevel();
-	LaserPower = 0;
-	PlasmaBombs = false;
-	HomingMissiles = false;
-	SeekerMissiles = false;
+	ResetLaserPower();
+	SetPlasmaBombs(false);
+	SetHomingMissiles(false);
+	SetSeekerMissiles(false);
 	PowerUp = EPowerUp::SpeedUp;
 	PowerUpActivationMode = false;
 }
@@ -168,52 +204,59 @@ void AZynapsPlayerState::ResetSpeedUpLevel()
 	SpeedUpLevel = 0;
 }
 
-// Cycles through the power-ups
-void AZynapsPlayerState::ShiftSelectedPowerUp()
+// Returns the laser power level
+uint8 AZynapsPlayerState::GetLaserPower() const
 {
-	uint8 PowerUpIndex = (uint8)PowerUp;
-	if (++PowerUpIndex > (uint8)EPowerUp::SeekerMissiles)
-	{
-		PowerUp = EPowerUp::SpeedUp;
-	}
-	else
-	{
-		PowerUp = (EPowerUp)PowerUpIndex;
-	}
+	return LaserPower;
 }
 
-// Activates the selected power-up
-void AZynapsPlayerState::ActivateSelectedPowerUp()
-{
-	// Activate the selected power-up
-	switch (PowerUp)
-	{
-	case EPowerUp::SpeedUp:
-		IncreaseSpeedUpLevel();
-		break;
-	case EPowerUp::LaserPower:
-		IncreaseLaserPower();
-		break;
-	case EPowerUp::PlasmaBombs:
-		PlasmaBombs = true;
-		break;
-	case EPowerUp::HomingMissiles:
-		HomingMissiles = true;
-		break;
-	case EPowerUp::SeekerMissiles:
-		SeekerMissiles = true;
-		break;
-	}
-
-	// Reset the power-up selection
-	PowerUp = EPowerUp::SpeedUp;
-}
-
-// Increases the laser power
+// Increases the laser power level
 void AZynapsPlayerState::IncreaseLaserPower()
 {
 	if (++LaserPower > 4)
 	{
 		LaserPower = 4;
 	}
+}
+
+// Resets the laser power level
+void AZynapsPlayerState::ResetLaserPower()
+{
+	LaserPower = 0;
+}
+
+// Returns the plasma bombs activation flag
+bool AZynapsPlayerState::GetPlasmaBombs() const
+{
+	return PlasmaBombs;
+}
+
+// Sets the value for the plasma bombs activation flag
+void AZynapsPlayerState::SetPlasmaBombs(bool NewPlasmaBombs)
+{
+	PlasmaBombs = NewPlasmaBombs;
+}
+
+// Returns the homing missiles activation flag
+bool AZynapsPlayerState::GetHomingMissiles() const
+{
+	return HomingMissiles;
+}
+
+// Sets the value for the homing missiles activation flag
+void AZynapsPlayerState::SetHomingMissiles(bool NewHomingMissiles)
+{
+	HomingMissiles = NewHomingMissiles;
+}
+
+// Returns the seeker missiles activation flag
+bool AZynapsPlayerState::GetSeekerMissiles() const
+{
+	return SeekerMissiles;
+}
+
+// Sets the value for the seeker missiles activation flag
+void AZynapsPlayerState::SetSeekerMissiles(bool NewSeekerMissiles)
+{
+	SeekerMissiles = NewSeekerMissiles;
 }

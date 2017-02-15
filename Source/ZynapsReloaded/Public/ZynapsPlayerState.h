@@ -67,6 +67,14 @@ public:
 	UFUNCTION(BlueprintPure, Category = ZynapsState)
 	EPowerUp GetSelectedPowerUp() const;
 
+	// Cycles through the power-ups
+	UFUNCTION(BlueprintCallable, Category = ZynapsState)
+	void ShiftSelectedPowerUp();
+
+	// Activates the selected power-up
+	UFUNCTION(BlueprintCallable, Category = ZynapsState)
+	void ActivateSelectedPowerUp();
+
 	// Called when a fuel capsule is collected
 	UFUNCTION(BlueprintCallable, Category = ZynapsState)
 	void FuelCapsuleCollected();
@@ -91,12 +99,13 @@ public:
 	UFUNCTION(BlueprintCallable, Category = ZynapsState)
 	void IncreaseLives();
 
-	// Resets the number of lives
-	void ResetLives();
-
 	// Reduces a live and resets the power-up states
 	UFUNCTION(BlueprintCallable, Category = ZynapsState)
-	void ReduceLives();
+	void DecreaseLives();
+
+	// Resets the number of lives
+	UFUNCTION(BlueprintCallable, Category = ZynapsState)
+	void ResetLives();
 
 	// Returns the speed-up level
 	UFUNCTION(BlueprintPure, Category = ZynapsState)
@@ -110,35 +119,41 @@ public:
 	UFUNCTION(BlueprintCallable, Category = ZynapsState)
 	void ResetSpeedUpLevel();
 
-	// Laser power (0 - 4)
-	UPROPERTY(Replicated, BlueprintReadWrite, Category = ZynapsState)
-	uint8 LaserPower;
+	// Returns the laser power level
+	UFUNCTION(BlueprintPure, Category = ZynapsState)
+	uint8 GetLaserPower() const;
 
-	// Plasma bombs
-	UPROPERTY(Replicated, BlueprintReadWrite, Category = ZynapsState)
-	bool PlasmaBombs;
-
-	// Homing missiles
-	UPROPERTY(Replicated, BlueprintReadWrite, Category = ZynapsState)
-	bool HomingMissiles;
-
-	// Seeker missiles
-	UPROPERTY(Replicated, BlueprintReadWrite, Category = ZynapsState)
-	bool SeekerMissiles;
-
-protected:
-
-	// Cycles through the power-ups
-	UFUNCTION(BlueprintCallable, meta = (BlueprintProtected), Category = ZynapsState)
-	void ShiftSelectedPowerUp();
-
-	// Activates the selected power-up
-	UFUNCTION(BlueprintCallable, meta = (BlueprintProtected), Category = ZynapsState)
-	void ActivateSelectedPowerUp();
-
-	// Increases the laser power
-	UFUNCTION(BlueprintCallable, meta = (BlueprintProtected), Category = ZynapsState)
+	// Increases the laser power level
+	UFUNCTION(BlueprintCallable, Category = ZynapsState)
 	void IncreaseLaserPower();
+
+	// Resets the laser power level
+	UFUNCTION(BlueprintCallable, Category = ZynapsState)
+	void ResetLaserPower();
+
+	// Returns the plasma bombs activation flag
+	UFUNCTION(BlueprintPure, Category = ZynapsState)
+	bool GetPlasmaBombs() const;
+
+	// Sets the value for the plasma bombs activation flag
+	UFUNCTION(BlueprintCallable, Category = ZynapsState)
+	void SetPlasmaBombs(bool NewPlasmaBombs);
+
+	// Returns the homing missiles activation flag
+	UFUNCTION(BlueprintPure, Category = ZynapsState)
+	bool GetHomingMissiles() const;
+
+	// Sets the value for the homing missiles activation flag
+	UFUNCTION(BlueprintCallable, Category = ZynapsState)
+	void SetHomingMissiles(bool NewHomingMissiles);
+
+	// Returns the seeker missiles activation flag
+	UFUNCTION(BlueprintPure, Category = ZynapsState)
+	bool GetSeekerMissiles() const;
+
+	// Sets the value for the seeker missiles activation flag
+	UFUNCTION(BlueprintCallable, Category = ZynapsState)
+	void SetSeekerMissiles(bool NewSeekerMissiles);
 
 private:
 
@@ -159,4 +174,17 @@ private:
 
 	// Speed up level (0 - 4)
 	uint8 SpeedUpLevel;
+
+	// Laser power (0 - 4)
+	uint8 LaserPower;
+
+	// Plasma bombs activation flag
+	bool PlasmaBombs;
+
+	// Homing missiles activation flag
+	bool HomingMissiles;
+
+	// Seeker missiles
+	bool SeekerMissiles;
+
 };

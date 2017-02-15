@@ -16,7 +16,7 @@ const float LimitMarginLeft = 50.0f;
 const float LimitMarginRight = 50.0f;
 
 // Percentage that the speed and acceleration will be incremented for each speed-up level
-const float SpeedUpLevelIncrement = 0.15f;  // 15%
+const float SpeedUpLevelIncrement = 0.12f;  // 12%
 
 /**
  * Component to manage the movement of a flying machine in a 2.5D game.

@@ -10,7 +10,7 @@
 DECLARE_LOG_CATEGORY_EXTERN(LogZynapsController, Log, All);
 
 // Time to activate the power-up activation mode
-const double PowerUpActivationModeTime = 0.5;  // One second
+const double PowerUpActivationModeTime = 0.25;  // A quarter of second
 
 /**
  * The default Player Controller used by StageGameMode.
