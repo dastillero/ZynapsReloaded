@@ -30,9 +30,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = Camera)
 	void SetCameraLocationWithOffset(FVector Location);
 
-protected:
+private:
 
 	// Returns the game state
-	UFUNCTION(BlueprintPure, meta = (BlueprintProtected), Category = Camera)
 	AZynapsGameState* GetZynapsGameState() const;
 };

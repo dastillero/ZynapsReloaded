@@ -78,23 +78,19 @@ protected:
 	UFUNCTION(BlueprintPure, meta = (BlueprintProtected), Category = ZynapsState)
 	APlayerPawn* GetPlayerPawn() const;
 
+private:
+
 	// Retrieves the game state
-	UFUNCTION(BlueprintPure, meta = (BlueprintProtected), Category = ZynapsState)
 	AZynapsGameState* GetZynapsGameState() const;
 
 	// Returns the player controller
-	UFUNCTION(BlueprintPure, meta = (BlueprintProtected), Category = ZynapsState)
 	AZynapsController* GetZynapsController() const;
 
 	// Returns the player state
-	UFUNCTION(BlueprintPure, meta = (BlueprintProtected), Category = ZynapsState)
 	AZynapsPlayerState* GetZynapsPlayerState() const;
 
 	// Returns the camera manager
-	UFUNCTION(BlueprintPure, meta = (BlueprintProtected), Category = ZynapsState)
 	AZynapsCameraManager* GetZynapsCameraManager() const;
-
-private:
 
 	// Timer handle which manages the time before the game starts regular playing
 	FTimerHandle PreparingTimerHandle;

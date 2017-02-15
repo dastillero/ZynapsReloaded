@@ -67,19 +67,16 @@ protected:
 	UFUNCTION(BlueprintCallable, meta = (BlueprintProtected), Category = ZynapsActions)
 	void BackPressed();
 
+private:
+
 	// Returns the player's pawn
-	UFUNCTION(BlueprintPure, meta = (BlueprintProtected), Category = ZynapsState)
 	APlayerPawn* GetPlayerPawn() const;
 
 	// Returns the game state
-	UFUNCTION(BlueprintPure, meta = (BlueprintProtected), Category = ZynapsState)
 	AZynapsGameState* GetZynapsGameState() const;
 
 	// Returns the player state
-	UFUNCTION(BlueprintPure, meta = (BlueprintProtected), Category = ZynapsState)
 	AZynapsPlayerState* GetZynapsPlayerState() const;
-
-private:
 
 	// Time in which the fire button was pressed
 	double FirePressedTime;

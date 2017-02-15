@@ -117,14 +117,6 @@ public:
 
 protected:
 
-	// Returns a reference to the instance of AZynapsPlayerState or NULL if it doesn't exist
-	UFUNCTION(BlueprintPure, meta = (BlueprintProtected), Category = ZynapsState)
-	AZynapsPlayerState* GetZynapsPlayerState() const;
-
-	// Returns the game state
-	UFUNCTION(BlueprintPure, meta = (BlueprintProtected), Category = ZynapsState)
-	AZynapsGameState* GetZynapsGameState() const;
-
 	// Returns the transform of a socket
 	UFUNCTION(BlueprintPure, meta = (BlueprintProtected), Category = ZynapsState)
 	FTransform GetSocketTransform(FName SocketName) const;
@@ -145,6 +137,12 @@ private:
 
 	// Creates the explosion particle system
 	UParticleSystem* CreateExplosionParticleSystem();
+
+	// Returns a reference to the instance of AZynapsPlayerState or NULL if it doesn't exist
+	AZynapsPlayerState* GetZynapsPlayerState() const;
+
+	// Returns the game state
+	AZynapsGameState* GetZynapsGameState() const;
 
 	// The next cannon to be shot
 	uint8 NextCannon;
