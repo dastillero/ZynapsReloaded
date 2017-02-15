@@ -170,7 +170,9 @@ void APlayerPawn::PostInitializeComponents()
 	if (!DynMaterial)
 	{
 		UE_LOG(LogPlayerPawn, Error, TEXT("The dynamic material instance could not be created"));
+		return;
 	}
+	DynMaterial->SetScalarParameterValue(FName("HighlightAlpha"), 0.0f);
 }
 
 // Called when the game starts or when spawned
