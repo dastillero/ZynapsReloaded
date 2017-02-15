@@ -159,6 +159,20 @@ UParticleSystem* APlayerPawn::CreateExplosionParticleSystem()
 	return Result;
 }
 
+// Called after component initialization
+void APlayerPawn::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
+	// Convert the first material of the mesh in a dynamic instance in order to change its color
+	// during the power-up activation mode
+	DynMaterial = MeshComponent->CreateAndSetMaterialInstanceDynamic(0);
+	if (!DynMaterial)
+	{
+		UE_LOG(LogPlayerPawn, Error, TEXT("The dynamic material instance could not be created"));
+	}
+}
+
 // Called when the game starts or when spawned
 void APlayerPawn::BeginPlay()
 {

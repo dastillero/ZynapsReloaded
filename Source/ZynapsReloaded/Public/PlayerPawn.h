@@ -29,6 +29,9 @@ public:
 	// Sets default values for this pawn's properties
 	APlayerPawn();
 
+	// Called after component initialization
+	virtual void PostInitializeComponents() override;
+
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 	
@@ -146,5 +149,9 @@ private:
 
 	// The next cannon to be shot
 	uint8 NextCannon;
+
+	// The dynamic material instance used to change the color of the ship during the power-up
+	// activation mode
+	UMaterialInstanceDynamic* DynMaterial;
 
 };
