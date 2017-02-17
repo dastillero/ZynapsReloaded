@@ -244,7 +244,7 @@ void APlayerPawn::Tick(float DeltaSeconds)
 		float GlowValue;
 		DynMaterial->GetScalarParameterValue(ParamName, GlowValue);
 		GlowValue += HighlightDirection * HighlightGlowSpeed * DeltaSeconds;
-		if (GlowValue <= 0.0f || GlowValue >= 0.5f)
+		if (GlowValue <= 0.0f || GlowValue >= 0.25f)
 		{
 			HighlightDirection *= -1.0f;
 		}
