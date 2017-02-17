@@ -203,24 +203,11 @@ void APlayerPawn::Tick(float DeltaSeconds)
 		return;
 	}
 
-	// If the game is not in Preparing state, apply the scroll speed to the player
-	if (ZynapsGameState->GetCurrentState() != EStageState::Preparing)
+	// If the game is in Preparing state, ensure that the pawn is located exactly at the player start. This is 
+	// really a fix as the game mode spawn functions doesn't seem to work properly the first time a pawn is 
+	// spawned at a player start.
+	if (ZynapsGameState->GetCurrentState() == EStageState::Preparing)
 	{
-		AZynapsWorldSettings* WorldSettings = AZynapsWorldSettings::GetZynapsWorldSettings(GetWorld());
-		if (WorldSettings)
-		{
-			CapsuleComponent->AddWorldOffset(FVector(0.0f, WorldSettings->ScrollSpeed * DeltaSeconds, 0.0f));
-		}
-		else
-		{
-			UE_LOG(LogPlayerPawn, Warning, TEXT("Failed to retrieve the stage world settings"));
-		}
-	}
-	else
-	{
-		// This is really a fix as the game mode spawn functions doesn't seem to work properly the
-		// first time a pawn is spawned at a player start. This code ensures that the pawn is
-		// located exactly at the player start
 		if (Controller)
 		{
 			if (Controller->StartSpot != nullptr)
@@ -228,6 +215,45 @@ void APlayerPawn::Tick(float DeltaSeconds)
 				CapsuleComponent->SetWorldLocation(Controller->StartSpot.Get()->GetActorLocation());
 			}
 		}
+		return;
+	}
+
+	// Apply the scroll speed to the player
+	AZynapsWorldSettings* WorldSettings = AZynapsWorldSettings::GetZynapsWorldSettings(GetWorld());
+	if (WorldSettings)
+	{
+		CapsuleComponent->AddWorldOffset(FVector(0.0f, WorldSettings->ScrollSpeed * DeltaSeconds, 0.0f));
+	}
+	else
+	{
+		UE_LOG(LogPlayerPawn, Warning, TEXT("Failed to retrieve the stage world settings"));
+	}
+
+	// Get the player state
+	AZynapsPlayerState* ZynapsPlayerState = GetZynapsPlayerState();
+	if (!ZynapsPlayerState)
+	{
+		UE_LOG(LogPlayerPawn, Error, TEXT("Failed to retrieve the player state"));
+		return;
+	}
+
+	// If the player is in power-up activation mode, perform the corresponding effect
+	FName ParamName("HighlightGlow");
+	if (ZynapsPlayerState->GetPowerUpActivationMode())
+	{
+		float GlowValue;
+		DynMaterial->GetScalarParameterValue(ParamName, GlowValue);
+		GlowValue += HighlightDirection * HighlightGlowSpeed * DeltaSeconds;
+		if (GlowValue <= 0.0f || GlowValue >= 0.5f)
+		{
+			HighlightDirection *= -1.0f;
+		}
+		DynMaterial->SetScalarParameterValue(ParamName, GlowValue);
+	}
+	else
+	{
+		DynMaterial->SetScalarParameterValue(ParamName, 0.0f);
+		HighlightDirection = 1.0f;
 	}
 }
 

@@ -17,6 +17,9 @@ const uint8 RightCannon = 0;
 const uint8 LeftCannon = 1;
 const uint8 TopCannon = 2;
 
+// Constant which defines the speed of the highlight glow while in power-up activation mode
+const float HighlightGlowSpeed = 1.0f;
+
 /**
  * The default Pawn class used by StageGameMode while playing the game.
  */
@@ -154,4 +157,6 @@ private:
 	// activation mode
 	UMaterialInstanceDynamic* DynMaterial;
 
+	// Highlight direction
+	float HighlightDirection = 1.0f;
 };
