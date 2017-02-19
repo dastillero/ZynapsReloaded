@@ -123,10 +123,6 @@
 			"Enabled": false
 		},
 		{
-			"Name": "WindowsMoviePlayer",
-			"Enabled": false
-		},
-		{
 			"Name": "OnlineSubsystem",
 			"Enabled": false
 		},
@@ -189,6 +185,22 @@
 		{
 			"Name": "SteamVR",
 			"Enabled": false
+		},
+		{
+			"Name": "LocationServicesBPLibrary",
+			"Enabled": false
+		},
+		{
+			"Name": "WindowsDeviceProfileSelector",
+			"Enabled": true
+		},
+		{
+			"Name": "PhysXVehicles",
+			"Enabled": false
+		},
+		{
+			"Name": "CodeView",
+			"Enabled": true
 		}
 	],
 	"TargetPlatforms": [
