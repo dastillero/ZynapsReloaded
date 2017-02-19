@@ -75,10 +75,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = ZynapsState)
 	void ActivateSelectedPowerUp();
 
-	// Called when a fuel capsule is collected
-	UFUNCTION(BlueprintCallable, Category = ZynapsState)
-	void FuelCapsuleCollected();
-
 	// Returns the game score
 	UFUNCTION(BlueprintPure, Category = ZynapsState)
 	int32 GetGameScore() const;

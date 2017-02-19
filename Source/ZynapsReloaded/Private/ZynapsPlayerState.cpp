@@ -114,19 +114,6 @@ void AZynapsPlayerState::ActivateSelectedPowerUp()
 	PowerUp = EPowerUp::SpeedUp;
 }
 
-// Called when a fuel capsule is collected
-void AZynapsPlayerState::FuelCapsuleCollected()
-{
-	if (PowerUpActivationMode)
-	{
-		ActivateSelectedPowerUp();
-	}
-	else
-	{
-		ShiftSelectedPowerUp();
-	}
-}
-
 // Returns the game score
 int32 AZynapsPlayerState::GetGameScore() const
 {

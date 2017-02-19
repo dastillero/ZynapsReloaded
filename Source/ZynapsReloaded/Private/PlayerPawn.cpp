@@ -308,8 +308,16 @@ void APlayerPawn::Fire()
 		GetSocketTransform(TopCannonSocketName)
 	};
 
-	// Shot the cannon
+	// Shot the cannon and play the corresponding sound
 	GetWorld()->SpawnActor<APlayerProjectile>(ProjectileClass, CannonTransforms[NextCannon]);
+	if (FireSound)
+	{
+		UGameplayStatics::PlaySound2D(GetWorld(), FireSound);
+	}
+	else
+	{
+		UE_LOG(LogPlayerPawn, Warning, TEXT("No sound specified when firing a cannon"));
+	}
 
 	// Prepare the next cannon to be shot
 	if (++NextCannon > TopCannon)
@@ -328,6 +336,20 @@ void APlayerPawn::Hit_Implementation(class UPrimitiveComponent* HitComp, class A
 		FTransform Transform(FRotator(0.0f, 0.0f, 0.0f), CapsuleComponent->GetComponentLocation(),
 			FVector(7.5f, 7.5f, 7.5f));
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ExplosionPartSystem, Transform, true);
+	}
+	else
+	{
+		UE_LOG(LogPlayerPawn, Warning, TEXT("No particle system specified for player explosion"));
+	}
+
+	// Play a sound
+	if (ExplosionSound)
+	{
+		UGameplayStatics::PlaySound2D(GetWorld(), ExplosionSound);
+	}
+	else
+	{
+		UE_LOG(LogPlayerPawn, Warning, TEXT("No sound specied for player explosion"));
 	}
 
 	// Play the camera shake
@@ -376,7 +398,30 @@ void APlayerPawn::BeginOverlap_Implementation(class UPrimitiveComponent* HitComp
 		}
 		else
 		{
-			ZynapsPlayerState->FuelCapsuleCollected();
+			if (ZynapsPlayerState->GetPowerUpActivationMode())
+			{
+				ZynapsPlayerState->ActivateSelectedPowerUp();
+				if (ActivatePowerUpSound)
+				{
+					UGameplayStatics::PlaySound2D(GetWorld(), ActivatePowerUpSound);
+				}
+				else
+				{
+					UE_LOG(LogPlayerPawn, Warning, TEXT("No sound specified for power-up activation"));
+				}
+			}
+			else
+			{
+				ZynapsPlayerState->ShiftSelectedPowerUp();
+				if (ShiftPowerUpSound)
+				{
+					UGameplayStatics::PlaySound2D(GetWorld(), ShiftPowerUpSound);
+				}
+				else
+				{
+					UE_LOG(LogPlayerPawn, Warning, TEXT("No sound specified for power-up shifting"));
+				}
+			}
 		}
 		OtherActor->Destroy();
 	}

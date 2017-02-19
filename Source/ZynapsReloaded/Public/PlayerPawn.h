@@ -121,6 +121,22 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Actor)
 	FName EngineThrustSocketName;
 
+	// The sound to be played when the player fires a cannon
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Actor)
+	USoundBase* FireSound;
+
+	// The sound to be played when the player is destroyed
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Actor)
+	USoundBase* ExplosionSound;
+
+	// The sound to be played when the selected power-up is shifted
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Actor)
+	USoundBase* ShiftPowerUpSound;
+
+	// The sound to be played when the selected power-up is activated
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Actor)
+	USoundBase* ActivatePowerUpSound;
+
 protected:
 
 	// Returns the transform of a socket
