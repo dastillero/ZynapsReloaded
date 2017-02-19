@@ -5,3 +5,4 @@ A remake of the classic ZX Spectrum game Zynaps made with Unreal Engine 4. Curre
 - Visual Studio Community 2015 Update 3
 - Blender 2.78b
 - GIMP 2.8.20
+- BFXR 1.4.1
