@@ -7,6 +7,7 @@
 #include "ZynapsGameState.h"
 #include "PlayerProjectile.h"
 #include "Fly2DMovementComponent.h"
+#include "FuelCapsule.h"
 #include "PlayerPawn.generated.h"
 
 // Log category
@@ -142,6 +143,14 @@ protected:
 	// Returns the transform of a socket
 	UFUNCTION(BlueprintPure, meta = (BlueprintProtected), Category = ZynapsState)
 	FTransform GetSocketTransform(FName SocketName) const;
+
+	// Called when a fuel capsule is collected
+	UFUNCTION(BlueprintCallable, meta = (BlueprintProtected), Category = ZynapsState)
+	void FuelCapsuleCollected(AZynapsPlayerState* ZynapsPlayerState, AFuelCapsule* FuelCapsule);
+
+	// Called when the player pawn is destroyed
+	UFUNCTION(BlueprintCallable, meta = (BlueprintProtected), Category = ZynapsState)
+	void PlayerPawnDestroyed(AZynapsPlayerState* ZynapsPlayerState);
 
 private: 
 

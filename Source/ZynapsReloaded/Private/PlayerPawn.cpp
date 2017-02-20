@@ -330,6 +330,82 @@ void APlayerPawn::Fire()
 void APlayerPawn::Hit_Implementation(class UPrimitiveComponent* HitComp, class AActor* OtherActor,
 	class UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult &HitResult)
 {
+}
+
+// Called when the player begins overlapping with another actor
+void APlayerPawn::BeginOverlap_Implementation(class UPrimitiveComponent* HitComp, class AActor* OtherActor,
+	class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep,
+	const FHitResult &SweepResult)
+{
+	AZynapsPlayerState* ZynapsPlayerState = GetZynapsPlayerState();
+	if (!ZynapsPlayerState)
+	{
+		UE_LOG(LogPlayerPawn, Error, TEXT("Failed to retrieve the player state"));
+		return;
+	}
+
+	if (OtherActor->IsA(AFuelCapsule::StaticClass()))
+	{
+		// Overlapping a fuel capsule
+		FuelCapsuleCollected(ZynapsPlayerState, Cast<AFuelCapsule>(OtherActor));
+	}
+	else
+	{
+		// Overlapping other actor
+		PlayerPawnDestroyed(ZynapsPlayerState);
+	}
+}
+
+// Called when the player ends overlapping with another actor
+void APlayerPawn::EndOverlap_Implementation(class UPrimitiveComponent* HitComp, class AActor* OtherActor,
+	class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+}
+
+// Returns the transform of a socket
+FTransform APlayerPawn::GetSocketTransform(FName SocketName) const
+{
+	FTransform Result;
+	if (MeshComponent->DoesSocketExist(SocketName))
+	{
+		Result = MeshComponent->GetSocketTransform(SocketName);
+	}
+	return Result;
+}
+
+// Called when a fuel capsule is collected
+void APlayerPawn::FuelCapsuleCollected(AZynapsPlayerState* ZynapsPlayerState, AFuelCapsule* FuelCapsule)
+{
+	if (ZynapsPlayerState->GetPowerUpActivationMode())
+	{
+		ZynapsPlayerState->ActivateSelectedPowerUp();
+		if (ActivatePowerUpSound)
+		{
+			UGameplayStatics::PlaySound2D(GetWorld(), ActivatePowerUpSound);
+		}
+		else
+		{
+			UE_LOG(LogPlayerPawn, Warning, TEXT("No sound specified for power-up activation"));
+		}
+	}
+	else
+	{
+		ZynapsPlayerState->ShiftSelectedPowerUp();
+		if (ShiftPowerUpSound)
+		{
+			UGameplayStatics::PlaySound2D(GetWorld(), ShiftPowerUpSound);
+		}
+		else
+		{
+			UE_LOG(LogPlayerPawn, Warning, TEXT("No sound specified for power-up shifting"));
+		}
+	}
+	FuelCapsule->Destroy();
+}
+
+// Called when the player pawn is destroyed
+void APlayerPawn::PlayerPawnDestroyed(AZynapsPlayerState* ZynapsPlayerState)
+{
 	// Spawn an explosion at the actor's location
 	if (ExplosionPartSystem)
 	{
@@ -371,75 +447,6 @@ void APlayerPawn::Hit_Implementation(class UPrimitiveComponent* HitComp, class A
 	}
 
 	// Update the player state and destroy the actor
-	AZynapsPlayerState* State = GetZynapsPlayerState();
-	if (State)
-	{
-		State->SetCurrentState(EPlayerState::Destroyed);
-	}
-	else
-	{
-		UE_LOG(LogPlayerPawn, Warning, TEXT("Failed to retrieve the player state for update"));
-	}
+	ZynapsPlayerState->SetCurrentState(EPlayerState::Destroyed);
 	Destroy();
-}
-
-// Called when the player begins overlapping with another actor
-void APlayerPawn::BeginOverlap_Implementation(class UPrimitiveComponent* HitComp, class AActor* OtherActor,
-	class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep,
-	const FHitResult &SweepResult)
-{
-	if (OtherActor->IsA(AFuelCapsule::StaticClass()))
-	{
-		// Overlapping a fuel capsule
-		AZynapsPlayerState* ZynapsPlayerState = GetZynapsPlayerState();
-		if (!ZynapsPlayerState)
-		{
-			UE_LOG(LogPlayerPawn, Warning, TEXT("Failed to retrieve the player state"));
-		}
-		else
-		{
-			if (ZynapsPlayerState->GetPowerUpActivationMode())
-			{
-				ZynapsPlayerState->ActivateSelectedPowerUp();
-				if (ActivatePowerUpSound)
-				{
-					UGameplayStatics::PlaySound2D(GetWorld(), ActivatePowerUpSound);
-				}
-				else
-				{
-					UE_LOG(LogPlayerPawn, Warning, TEXT("No sound specified for power-up activation"));
-				}
-			}
-			else
-			{
-				ZynapsPlayerState->ShiftSelectedPowerUp();
-				if (ShiftPowerUpSound)
-				{
-					UGameplayStatics::PlaySound2D(GetWorld(), ShiftPowerUpSound);
-				}
-				else
-				{
-					UE_LOG(LogPlayerPawn, Warning, TEXT("No sound specified for power-up shifting"));
-				}
-			}
-		}
-		OtherActor->Destroy();
-	}
-}
-
-// Called when the player ends overlapping with another actor
-void APlayerPawn::EndOverlap_Implementation(class UPrimitiveComponent* HitComp, class AActor* OtherActor,
-	class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
-{
-}
-
-// Returns the transform of a socket
-FTransform APlayerPawn::GetSocketTransform(FName SocketName) const
-{
-	FTransform Result;
-	if (MeshComponent->DoesSocketExist(SocketName))
-	{
-		Result = MeshComponent->GetSocketTransform(SocketName);
-	}
-	return Result;
 }
