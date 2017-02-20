@@ -69,10 +69,10 @@ UCapsuleComponent* APlayerPawn::CreateCapsuleComponent(USceneComponent* Parent)
 	Component->BodyInstance.bLockZRotation = true;
 	Component->BodyInstance.bLockXTranslation = true;
 	//Component->SetHiddenInGame(false);
-	Component->WakeRigidBody();
+	//Component->WakeRigidBody();
 	Component->OnComponentBeginOverlap.AddDynamic(this, &APlayerPawn::BeginOverlap);
 	Component->OnComponentEndOverlap.AddDynamic(this, &APlayerPawn::EndOverlap);
-	Component->OnComponentHit.AddDynamic(this, &APlayerPawn::Hit);
+	//Component->OnComponentHit.AddDynamic(this, &APlayerPawn::Hit);
 	Component->SetupAttachment(Parent);
 
 	return Component;
@@ -244,7 +244,7 @@ void APlayerPawn::Tick(float DeltaSeconds)
 		float GlowValue;
 		DynMaterial->GetScalarParameterValue(ParamName, GlowValue);
 		GlowValue += HighlightDirection * HighlightGlowSpeed * DeltaSeconds;
-		if (GlowValue <= 0.0f || GlowValue >= 0.25f)
+		if (GlowValue <= 0.0f || GlowValue >= 0.5f)
 		{
 			HighlightDirection *= -1.0f;
 		}
