@@ -54,14 +54,14 @@ UCapsuleComponent* APlayerPawn::CreateCapsuleComponent(USceneComponent* Parent)
 	Component->SetWorldScale3D(FVector(12.0f, 10.0f, 10.0f));
 	Component->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	Component->bGenerateOverlapEvents = true;
-	Component->SetNotifyRigidBodyCollision(true);
+	//Component->SetNotifyRigidBodyCollision(true);
 	Component->SetCollisionObjectType(ECollisionChannel::ECC_Pawn);
 	Component->SetCanEverAffectNavigation(false);
 	Component->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
-	Component->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldStatic, ECollisionResponse::ECR_Block);
-	Component->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldDynamic, ECollisionResponse::ECR_Block);
+	Component->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldStatic, ECollisionResponse::ECR_Overlap);
+	Component->SetCollisionResponseToChannel(ECollisionChannel::ECC_WorldDynamic, ECollisionResponse::ECR_Overlap);
 	Component->SetCollisionResponseToChannel(ECollisionChannel::ECC_PhysicsBody, ECollisionResponse::ECR_Overlap);
-	Component->SetSimulatePhysics(true);
+	Component->SetSimulatePhysics(false);
 	Component->SetEnableGravity(false);
 	Component->SetAngularDamping(0.0f);
 	Component->SetLinearDamping(0.0f);
