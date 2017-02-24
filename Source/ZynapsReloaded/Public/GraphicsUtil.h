@@ -141,8 +141,8 @@ struct FScalabilitySettings
 	// Default constructor
 	FScalabilitySettings()
 	{
-		AntiAliasing = Effects = EScalability4::Medium;
-		PostProcess = Shadow = ViewDistance = Foliage = EScalability4::Low;
+		AntiAliasing = Effects = Shadow = EScalability4::Medium;
+		PostProcess = ViewDistance = Foliage = EScalability4::Low;
 		Texture = EScalability4::Ultra;
 		Resolution = EScalability100::High;
 	}
