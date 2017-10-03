@@ -11,9 +11,9 @@ FBXHeaderExtension:  {
 		Year: 2017
 		Month: 10
 		Day: 03
-		Hour: 19
-		Minute: 00
-		Second: 59
+		Hour: 23
+		Minute: 58
+		Second: 54
 		Millisecond: 0
 	}
 	Creator: "FBX SDK/FBX Plugins build 20070228"
@@ -21,7 +21,7 @@ FBXHeaderExtension:  {
 		FlagPLE: 0
 	}
 }
-CreationTime: "2017-10-03 19:00:59:000"
+CreationTime: "2017-10-03 23:58:54:000"
 Creator: "Blender version 2.78 (sub 0)"
 
 ; Object definitions
@@ -29,7 +29,7 @@ Creator: "Blender version 2.78 (sub 0)"
 
 Definitions:  {
 	Version: 100
-	Count: 11
+	Count: 12
 	ObjectType: "Model" {
 		Count: 3
 	}
@@ -37,7 +37,7 @@ Definitions:  {
 		Count: 3
 	}
 	ObjectType: "Material" {
-		Count: 5
+		Count: 6
 	}
 	ObjectType: "Texture" {
 		Count: 1
@@ -1497,9 +1497,10 @@ Objects:  {
 		LayerElementMaterial: 0 {
 			Version: 101
 			Name: ""
-			MappingInformationType: "AllSame"
+			MappingInformationType: "ByPolygon"
 			ReferenceInformationType: "IndexToDirect"
-			Materials: 0
+			Materials: 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+			           1,1,1,1,1,1,1,1,1
 		}
 		Layer: 0 {
 			Version: 100
@@ -2722,6 +2723,36 @@ Objects:  {
 			}
 		}
 	}
+	Material: "Material::Mat_Cockpit__Untitled", "" {
+		Version: 102
+		ShadingModel: "lambert"
+		MultiLayer: 0
+		Properties60:  {
+			Property: "ShadingModel", "KString", "", "Lambert"
+			Property: "MultiLayer", "bool", "",0
+			Property: "EmissiveColor", "ColorRGB", "",0.0835,0.0835,0.0835
+			Property: "EmissiveFactor", "double", "",0.0000
+			Property: "AmbientColor", "ColorRGB", "",1.0000,1.0000,1.0000
+			Property: "AmbientFactor", "double", "",1.0000
+			Property: "DiffuseColor", "ColorRGB", "",0.0835,0.0835,0.0835
+			Property: "DiffuseFactor", "double", "",0.8000
+			Property: "Bump", "Vector3D", "",0,0,0
+			Property: "TransparentColor", "ColorRGB", "",1,1,1
+			Property: "TransparencyFactor", "double", "",0.0000
+			Property: "SpecularColor", "ColorRGB", "",1.0000,1.0000,1.0000
+			Property: "SpecularFactor", "double", "",0.5000
+			Property: "ShininessExponent", "double", "",12.3
+			Property: "ReflectionColor", "ColorRGB", "",0,0,0
+			Property: "ReflectionFactor", "double", "",1
+			Property: "Emissive", "ColorRGB", "",0,0,0
+			Property: "Ambient", "ColorRGB", "",1.0,1.0,1.0
+			Property: "Diffuse", "ColorRGB", "",0.1,0.1,0.1
+			Property: "Specular", "ColorRGB", "",1.0,1.0,1.0
+			Property: "Shininess", "double", "",12.3
+			Property: "Opacity", "double", "",1.0
+			Property: "Reflectivity", "double", "",0
+		}
+	}
 	Material: "Material::Mat_Cyan_Metal", "" {
 		Version: 102
 		ShadingModel: "lambert"
@@ -2981,6 +3012,8 @@ Relations:  {
 	}
 	Model: "Model::Camera Switcher", "CameraSwitcher" {
 	}
+	Material: "Material::Mat_Cockpit__Untitled", "" {
+	}
 	Material: "Material::Mat_Cyan_Metal", "" {
 	}
 	Material: "Material::Mat_Green_Metal", "" {
@@ -3008,6 +3041,7 @@ Connections:  {
 	Connect: "OO", "Material::Mat_Green_Metal", "Model::Pipe_2"
 	Connect: "OO", "Material::Mat_White_Metal", "Model::Pipe_2"
 	Connect: "OO", "Material::Mat_Yellow_Metal", "Model::Pipe_2"
+	Connect: "OO", "Material::Mat_Cockpit__Untitled", "Model::Hull"
 	Connect: "OO", "Material::Mat_Hull__Untitled", "Model::Hull"
 	Connect: "OO", "Material::Mat_Cyan_Metal", "Model::Pipe_1"
 	Connect: "OO", "Material::Mat_Green_Metal", "Model::Pipe_1"
