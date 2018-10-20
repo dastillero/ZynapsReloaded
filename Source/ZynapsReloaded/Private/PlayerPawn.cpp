@@ -53,7 +53,7 @@ UCapsuleComponent* APlayerPawn::CreateCapsuleComponent(USceneComponent* Parent)
 	Component->SetWorldRotation(FRotator(0.0f, 180.0f, -90.0f));
 	Component->SetWorldScale3D(FVector(12.0f, 10.0f, 10.0f));
 	Component->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-	Component->bGenerateOverlapEvents = true;
+	Component->SetGenerateOverlapEvents(true);
 	//Component->SetNotifyRigidBodyCollision(true);
 	Component->SetCollisionObjectType(ECollisionChannel::ECC_Pawn);
 	Component->SetCanEverAffectNavigation(false);

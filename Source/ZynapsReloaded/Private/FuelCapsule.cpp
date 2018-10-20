@@ -30,7 +30,7 @@ UCapsuleComponent* AFuelCapsule::CreateCapsuleComponent(USceneComponent* Parent)
 	Component->InitCapsuleSize(45.0, 70.0f);
 	Component->SetWorldRotation(FRotator(0.0f, 0.0f, 90.0f));
 	Component->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-	Component->bGenerateOverlapEvents = true;
+	Component->SetGenerateOverlapEvents(true);
 	Component->SetNotifyRigidBodyCollision(true);
 	Component->SetCollisionObjectType(ECollisionChannel::ECC_PhysicsBody);
 	Component->SetCanEverAffectNavigation(false);
